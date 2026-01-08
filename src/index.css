@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Lato:ital,wght@0,100..900;1,100..900&family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
-@import "tailwindcss";
-@import "tailwindcss/theme";
 
+@import "tailwindcss";
 @import "flowbite";
+/* @import "./assets/theme.css"; */
 
 @theme {
   /* main color */
@@ -98,8 +98,6 @@
     line-height: 1.25;
     letter-spacing: 0;
   }
-
-  ;
 
   .text-lato-semibold {
     font-family: var(--font-lato);

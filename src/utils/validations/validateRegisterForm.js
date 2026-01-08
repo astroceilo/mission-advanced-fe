@@ -3,26 +3,8 @@ import { isValidPhoneNumber } from 'react-phone-number-input';
 import { isPasswordStrong, isPasswordMatch } from "./passwordValidation";
 
 
-interface RegisterForm {
-  fullName?: string;
-  email?: string;
-  gender?: string;
-  phone?: string;
-  password?: string;
-  confirmPassword?: string;
-}
-
-type ValidationError = string | string[];
-
-type PasswordCheckKey =
-  | "minLength"
-  | "hasUpper"
-  | "hasLower"
-  | "hasNumber"
-  | "hasSymbol";
-
-export const validateRegisterForm = (name: string, value: string, form: RegisterForm = {}): ValidationError => {
-    let errorMsg: ValidationError = "";
+export const validateRegisterForm = (name, value, form = {}) => {
+    let errorMsg = "";
 
     switch (name) {
         case "fullName":
@@ -64,7 +46,7 @@ export const validateRegisterForm = (name: string, value: string, form: Register
 
                 const check = isPasswordStrong(value);
 
-                const messages: Record<PasswordCheckKey, string> = {
+                const messages = {
                     minLength: "At least 8 characters.",
                     hasUpper: "Contains an uppercase letter.",
                     hasLower: "Contains a lowercase letter.",
@@ -73,7 +55,7 @@ export const validateRegisterForm = (name: string, value: string, form: Register
                 };
 
                 // ambil semua pesan yang gagal
-                const failedMessages = (Object.keys(messages) as PasswordCheckKey[])
+                const failedMessages = (Object.keys(messages))
                     .filter((key) => !check[key])
                     .map((key) => messages[key]);
 

@@ -11,7 +11,6 @@ import PhoneInputCustom from "../../components/PhoneInputCustom";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../services/api";
 
-
 export default function Register() {
   const { login } = useAuth();
 
@@ -97,11 +96,9 @@ export default function Register() {
       confirmPassword: "",
     };
     // validate any field w/ helper
-    (Object.entries(form)).forEach(
-      ([key, val]) => {
-        newErrors[key] = validateRegisterForm(key, val, form) || "";
-      }
-    );
+    Object.entries(form).forEach(([key, val]) => {
+      newErrors[key] = validateRegisterForm(key, val, form) || "";
+    });
 
     setErrors(newErrors);
     // return true if all empty (valid)
@@ -129,9 +126,7 @@ export default function Register() {
 
     try {
       // cek email
-      const checkEmail = await api.get("/users", {
-        params: { search: form.email.trim() },
-      });
+      const checkEmail = await api.get("/users");
 
       const isExist = checkEmail.data.some(
         (u) => u.email === form.email.trim()
@@ -149,7 +144,7 @@ export default function Register() {
         gender: form.gender,
         phone: parsed.number,
         password: form.password,
-        photo: null,
+        avatar: null,
         role: "student",
       });
 
@@ -158,8 +153,13 @@ export default function Register() {
       login(res.data);
       setTimeout(() => navigate("/"), 2000);
     } catch (err) {
-      toast.error("Terjadi kesalahan server. Coba lagi.");
-      console.error(err);
+      toast.error(err, "Terjadi kesalahan server. Coba lagi.");
+      // console.error(err);
+
+      // console.log("STATUS:", err.response?.status);
+      // console.log("URL:", err.config?.url);
+      // console.log("PARAMS:", err.config?.params);
+      // console.log("RESPONSE:", err.response?.data);
     }
 
     // setPayload(data);

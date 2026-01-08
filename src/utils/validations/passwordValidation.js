@@ -1,4 +1,4 @@
-export function isPasswordStrong(password: string) {
+export function isPasswordStrong(password) {
     const minLength = password.length >= 8;
     const hasUpper = /[A-Z]/.test(password);
     const hasLower = /[a-z]/.test(password);
@@ -9,6 +9,6 @@ export function isPasswordStrong(password: string) {
     // return minLength && hasUpper && hasLower && hasNumber && hasSymbol;
 }
 
-export function isPasswordMatch(password: string, confirmPassword: string) {
+export function isPasswordMatch(password, confirmPassword) {
     return password === confirmPassword;
 }

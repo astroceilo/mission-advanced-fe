@@ -7,6 +7,12 @@ import AuthLayout from "../layouts/AuthLayout";
 
 const Home = lazy(() => import("../pages/Home"));
 const Products = lazy(() => import("../pages/Products"));
+const NewProducts = lazy(() =>
+  import("../pages/Products/Parts/CreateProducts.jsx")
+);
+const UpdateProducts = lazy(() =>
+  import("../pages/Products/Parts/UpdateProducts.jsx")
+);
 const ProductDetail = lazy(() => import("../pages/Products/ProductDetail"));
 const Login = lazy(() => import("../pages/Auth/Login"));
 const Register = lazy(() => import("../pages/Auth/Register"));
@@ -26,6 +32,8 @@ export default function AppRoutes() {
         <Route element={<AuthLayout bgClass="bg-[rgba(255,253,243)]" />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/create-products" element={<NewProducts />} />
+          <Route path="/update-products" element={<UpdateProducts />} />
         </Route>
       </Routes>
     </Suspense>

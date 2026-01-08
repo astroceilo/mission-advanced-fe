@@ -3,33 +3,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Search } from "lucide-react";
 import { AsYouType } from "libphonenumber-js";
 
-interface Country {
-  name: string;
-  code: string; // e.g., +62
-  flag: string;
-  cca2: string; // ISO code: ID, US, etc.
-}
-
-interface PhoneInputProps {
-  value: string;
-  onChange: (v: string) => void;
-  errors?: string;
-}
 
 export default function PhoneInputCustom({
   value,
   onChange,
   errors = "",
-}: PhoneInputProps) {
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [filtered, setFiltered] = useState<Country[]>([]);
-  const [selected, setSelected] = useState<Country | null>(null);
+}) {
+  const [countries, setCountries] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [selected, setSelected] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(value || "");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const activeRef = useRef<HTMLButtonElement>(null);
+  const wrapperRef = useRef(null);
+  const activeRef = useRef(null);
 
   // Sync nilai dari props ke state lokal
   useLayoutEffect(() => {
@@ -48,19 +36,19 @@ export default function PhoneInputCustom({
         const data = await res.json();
 
         const mapped = data
-          .filter((c: any) => c.idd?.root && c.idd?.suffixes)
-          .map((c: any) => ({
+          .filter((c) => c.idd?.root && c.idd?.suffixes)
+          .map((c) => ({
             name: c.name.common,
             code: c.idd.root + c.idd.suffixes[0],
             flag: c.flags.svg,
             cca2: c.cca2,
           }))
-          .sort((a: any, b: any) => a.name.localeCompare(b.name));
+          .sort((a, b) => a.name.localeCompare(b.name));
 
         setCountries(mapped);
         setFiltered(mapped);
 
-        const preset = mapped.find((c: any) => c.cca2 === "ID");
+        const preset = mapped.find((c) => c.cca2 === "ID");
         if (preset) {
           setSelected(preset);
           setInputValue(preset.code + " "); // auto +62
@@ -68,7 +56,7 @@ export default function PhoneInputCustom({
       } catch (err) {
         console.error("API Error:", err);
 
-        const fallback: Country = {
+        const fallback = {
           name: "Indonesia",
           code: "+62",
           flag: "https://flagcdn.com/w320/id.png",
@@ -85,10 +73,10 @@ export default function PhoneInputCustom({
 
   // click outside closes dropdown
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e) => {
       if (
         wrapperRef.current &&
-        !wrapperRef.current.contains(e.target as Node)
+        !wrapperRef.current.contains(e.target)
       ) {
         setIsOpen(false);
       }
@@ -117,7 +105,7 @@ export default function PhoneInputCustom({
   }, [searchTerm, countries]);
 
   // change input number
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e) => {
     const raw = e.target.value.replace(/[^\d]/g, "");
 
     if (raw.length > 15) return;
@@ -131,7 +119,7 @@ export default function PhoneInputCustom({
     // merge selected + raw
     const fullNumber = selected.code + raw;
     // format number by countries choice
-    const formatted = new AsYouType(selected.cca2 as any).input(fullNumber);
+    const formatted = new AsYouType(selected.cca2).input(fullNumber);
 
     // update: ui still raw, but onChange send formatted number
     setInputValue(formatted);
@@ -139,14 +127,14 @@ export default function PhoneInputCustom({
   };
 
   // choice countries
-  const handleSelect = (country: Country) => {
+  const handleSelect = (country) => {
     setSelected(country);
     setIsOpen(false);
 
     const numberWithoutPrefix = inputValue.replace(/^\+\d+/, "").trim();
     const fullNumber =
       country.code + (numberWithoutPrefix ? numberWithoutPrefix : "");
-    const formatted = new AsYouType(country.cca2 as any).input(fullNumber);
+    const formatted = new AsYouType(country.cca2).input(fullNumber);
     setInputValue(formatted);
     onChange?.(formatted);
   };
@@ -166,10 +154,10 @@ export default function PhoneInputCustom({
         name="phone"
         value={inputValue || ""}
         required
-        onInvalid={(e: React.FormEvent<HTMLInputElement>) =>
+        onInvalid={(e) =>
           e.currentTarget.setCustomValidity("Silakan isi nomor HP yang valid.")
         }
-        onInput={(e: React.FormEvent<HTMLInputElement>) =>
+        onInput={(e) =>
           e.currentTarget.setCustomValidity("")
         }
       />
@@ -211,10 +199,10 @@ export default function PhoneInputCustom({
           required
           onChange={handleInputChange}
           onInvalid={(e) =>
-            (e.currentTarget as HTMLInputElement).setCustomValidity("")
+            (e.currentTarget).setCustomValidity("")
           }
           onInput={(e) =>
-            (e.currentTarget as HTMLInputElement).setCustomValidity("")
+            (e.currentTarget).setCustomValidity("")
           }
           className={`w-full text-sm md:text-base! border rounded-md px-3 py-2 focus:ring-2 focus:outline-none transition ${
             errors

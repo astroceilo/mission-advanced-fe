@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 
 import { validateLoginForm } from "../../utils/validations/validateLoginForm";
 import { useAuth } from "../../context/AuthContext";
-
+import { api } from "../../services/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -42,54 +42,37 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // const data = {
-    //   email: form.email,
-    //   password: form.password,
-    // };
+    try {
+      const res = await api.get("/users");
+      const users = res.data;
+      if (!users.length) {
+        toast.error("Belum ada user terdaftar di sistem");
+        return;
+      }
 
-    // Ambil data dari localStorage dulu
-    const rawUsers = localStorage.getItem("users");
-    const existingUsers = rawUsers ? JSON.parse(rawUsers) : [];
+      const foundUser = users.find(
+        (u) => u.email.toLowerCase() === form.email.toLowerCase()
+      );
 
-    // Cek apakah ada data user
-    if (existingUsers.length === 0) {
-      toast.error("Belum ada data user, silakan register.");
-      return;
-    }
+      if (!foundUser) {
+        toast.warning("Email belum terdaftar");
+        return;
+      }
 
-    // Cek apakah email sudah terdaftar
-    const foundUser = existingUsers.find(
-      (u) => u.email.toLowerCase() === form.email.toLowerCase()
-    );
+      if (foundUser.password !== form.password) {
+        toast.error("Password salah");
+        return;
+      }
 
-    if (!foundUser) {
-      toast.warning("Email belum terdaftar, silakan register.");
-      return;
-    }
-
-    // Cek password cocok atau tidak
-    if (foundUser.password.trim() !== form.password.trim()) {
-      toast.error("Password salah!");
-      return;
-    }
-
-    // True validation is passed, proceed to submit
-    // setLoading(true);
-    setTimeout(() => {
-      // setLoading(false);
-      toast.success("Login berhasil!", {
+      toast.success("Login berhasil 🎉", {
         autoClose: 2000,
       });
-
-      // Simpan data login
-      // localStorage.setItem("loggedInUser", JSON.stringify(user));
       login(foundUser);
-
-      // Delay sedikit biar user lihat notifikasi dulu
       setTimeout(() => navigate("/"), 1200);
-    }, 1000);
-
-    // console.log("Data dikirim ke backend:", data);
+    } catch (err) {
+      toast.error("Gagal konek ke server");
+      console.error(err);
+    }
   };
 
   return (
