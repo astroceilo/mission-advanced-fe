@@ -6,20 +6,26 @@ import MainLayout from "../layouts/MainLayout";
 import AuthLayout from "../layouts/AuthLayout";
 import ProtectedRoute from "./ProtectedRoute";
 
+// Home/Public pages
 const Home = lazy(() => import("../pages/Home"));
 const Products = lazy(() => import("../pages/Products"));
-const ProductDetails = lazy(() =>
-  import("../pages/Products/ProductDetails.jsx")
+const ProductDetails = lazy(() => import("../pages/Products/ProductDetails"));
+
+// Product Management (Protected) pages
+const DetailProducts = lazy(
+  () => import("../pages/Products/Parts/DetailProducts.jsx")
 );
-const ProductLists = lazy(() =>
-  import("../pages/Products/Parts/ProductLists.jsx")
+const ListProducts = lazy(
+  () => import("../pages/Products/Parts/ListProducts.jsx")
 );
-const NewProducts = lazy(() =>
-  import("../pages/Products/Parts/CreateProducts.jsx")
+const NewProducts = lazy(
+  () => import("../pages/Products/Parts/CreateProducts.jsx")
 );
-const UpdateProducts = lazy(() =>
-  import("../pages/Products/Parts/UpdateProducts.jsx")
+const UpdateProducts = lazy(
+  () => import("../pages/Products/Parts/UpdateProducts.jsx")
 );
+
+// Auth pages
 const Login = lazy(() => import("../pages/Auth/Login"));
 const Register = lazy(() => import("../pages/Auth/Register"));
 
@@ -31,7 +37,7 @@ export default function AppRoutes() {
         <Route element={<MainLayout bgClass="bg-[rgba(255,253,243)]" />}>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
-          <Route path="/products/:id" element={<ProductDetails />} />
+          <Route path="/products/:slug" element={<ProductDetails />} />
         </Route>
 
         {/* Auth pages (public) */}
@@ -43,9 +49,10 @@ export default function AppRoutes() {
         {/* Protected pages */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AuthLayout bgClass="bg-[rgba(255,253,243)]" />}>
-            <Route path="/product-lists" element={<ProductLists />} />
+            <Route path="/list-products" element={<ListProducts />} />
+            <Route path="/detail-products/:slug" element={<DetailProducts />} />
             <Route path="/create-products" element={<NewProducts />} />
-            <Route path="/update-products" element={<UpdateProducts />} />
+            <Route path="/update-products/:slug" element={<UpdateProducts />} />
           </Route>
         </Route>
       </Routes>

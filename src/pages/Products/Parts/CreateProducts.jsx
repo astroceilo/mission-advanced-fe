@@ -5,7 +5,9 @@ import { toast } from "react-toastify";
 
 import { validateCreateProductForm } from "../../../utils/validationsProduct/validateCreateProductForm";
 import { normalizeProductForCreate } from "../../../utils/normalizeProduct/normalizeProductForCreate";
+import { validateImageFile } from "../../../utils/validators/validateImageFile";
 import CategoryDropdown from "../../../components/Dropdown/CategoryDropdown";
+import { handleSlugChange } from "../../../utils/slug/handleSlugChange";
 import { getFinalPrice, formatPriceFull } from "../../../utils/price";
 import { useAuth } from "../../../context/AuthContext";
 import { slugify } from "../../../utils/slugify";
@@ -79,91 +81,65 @@ export default function CreateProducts() {
     };
   }, [preview]);
 
-  // handle change input
-  const handleChange = (eOrName, value) => {
-    // custom component
-    if (typeof eOrName === "string") {
-      setForm((prev) => ({ ...prev, [eOrName]: value }));
+  // handle file change
+  const updateForm = (name, value) => {
+    const slugUpdate = handleSlugChange({
+      name,
+      value,
+      isSlugManual,
+    });
 
-      const errorMsg = validateCreateProductForm(eOrName, value, {
-        ...form,
-        [eOrName]: value,
-      });
-
-      setErrors((prev) => ({ ...prev, [eOrName]: errorMsg }));
-      return;
-    }
-
-    // normal input
-    const { name, type, files, value: inputValue } = eOrName.target;
-
-    // slug
-    if (name === "slug") {
+    if (slugUpdate.setManual) {
       setIsSlugManual(true);
-
-      const sanitized = slugify(inputValue);
-      if (sanitized !== inputValue) {
-        setForm((prev) => ({ ...prev, slug: sanitized }));
-      }
-    }
-
-    // khusus file input
-    if (type === "file") {
-      const file = files[0];
-
-      if (!file) return;
-
-      // validasi type
-      const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
-
-      if (!allowedTypes.includes(file.type)) {
-        setErrors((prev) => ({
-          ...prev,
-          thumbnail: "Thumbnail harus berupa gambar (PNG, JPG, WEBP)",
-        }));
-        return;
-      }
-
-      // validasi size (contoh max 2MB)
-      const maxSize = 2 * 1024 * 1024;
-      if (file.size > maxSize) {
-        setErrors((prev) => ({
-          ...prev,
-          thumbnail: "Ukuran gambar maksimal 2MB",
-        }));
-        return;
-      }
-
-      // preview
-      const previewUrl = URL.createObjectURL(file);
-      setPreview(previewUrl);
-
-      setForm((prev) => ({
-        ...prev,
-        thumbnail: file,
-      }));
-
-      setErrors((prev) => ({ ...prev, thumbnail: "" }));
-      return;
     }
 
     const updatedForm = {
       ...form,
-      [name]: inputValue,
-      ...(name === "title" &&
-        !isSlugManual && {
-          slug: slugify(inputValue),
-        }),
+      [name]: value,
+      ...slugUpdate,
     };
 
     setForm(updatedForm);
 
-    const errorMsg = validateCreateProductForm(name, inputValue, {
-      ...form,
-      [name]: inputValue,
-    });
+    setErrors((prev) => ({
+      ...prev,
+      [name]: validateCreateProductForm(name, updatedForm[name], updatedForm),
+    }));
+  };
 
-    setErrors((prev) => ({ ...prev, [name]: errorMsg }));
+  // handle file change
+  const handleFileChange = (file) => {
+    if (!file) return;
+
+    const error = validateImageFile(file);
+    if (error) {
+      setErrors((prev) => ({ ...prev, thumbnail: error }));
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setPreview(previewUrl);
+
+    setForm((prev) => ({ ...prev, thumbnail: file }));
+    setErrors((prev) => ({ ...prev, thumbnail: "" }));
+  };
+
+  // handle change input
+  const handleChange = (eOrName, value) => {
+    // custom component (dropdown, etc)
+    if (typeof eOrName === "string") {
+      updateForm(eOrName, value);
+      return;
+    }
+
+    const { name, type, files, value: inputValue } = eOrName.target;
+
+    if (type === "file") {
+      handleFileChange(files?.[0]);
+      return;
+    }
+
+    updateForm(name, inputValue);
   };
 
   // validate all field

@@ -1,8 +1,13 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import usePaginationDelta from "./usePaginationDelta";
+
 export default function Pagination({ currentPage, totalPages, onPageChange }) {
+  // hook to get delta based on screen size
+  const delta = usePaginationDelta();
+
+  // function to get pagination range with dots
   const getPaginationRange = (current, total) => {
-    const delta = 2;
     const range = [];
     const rangeWithDots = [];
     let last;

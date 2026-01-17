@@ -12,69 +12,51 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { p } from "framer-motion/client";
 
-import RatingStars from "../../components/RatingStars";
-import CardCourse from "../../components/CardCourse";
-import { getFinalPrice } from "../../utils/price";
+import { normalizeProductForLists } from "../../../utils/normalizeProduct/normalizeProductForLists";
+import { truncateText } from "../../../utils/truncateText";
+import RatingStars from "../../../components/RatingStars";
+import CardCourse from "../../../components/CardCourse";
+import { getFinalPrice } from "../../../utils/price";
+import { api } from "../../../services/api";
 
-export default function ProductDetails() {
+export default function DetailProducts() {
   const { slug } = useParams();
-  const [course, setCourse] = useState(null);
-  const [category, setCategory] = useState(null);
-  const [lessons, setLessons] = useState([]);
-  const [relatedCourses, setRelatedCourses] = useState([]);
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const [coursesRes, categoriesRes, usersRes, lessonsRes] =
-        await Promise.all([
-          fetch("/data/courses.json"),
-          fetch("/data/categories.json"),
-          fetch("/data/users.json"),
-          fetch("/data/lessons.json"),
-        ]);
-      const [coursesData, categoriesData, usersData, lessonsData] =
-        await Promise.all([
-          coursesRes.json(),
-          categoriesRes.json(),
-          usersRes.json(),
-          lessonsRes.json(),
+      try {
+        const [productRes, productsRes, usersRes] = await Promise.all([
+          api.get(`/products?slug=${slug}`),
+          api.get("/products"),
+          api.get("/users"),
         ]);
 
-      // Pilih course berdasarkan slug (title diubah menjadi slug)
-      const selected = coursesData.find(
-        (item) => item.title.toLowerCase().replace(/\s+/g, "-") === slug
-      );
-      if (selected) {
-        const instructor = usersData.find(
-          (u) => u.id === selected.instructor_id
-        );
-        setCourse({ ...selected, instructor });
+        const productRaw = productRes.data?.[0];
+        if (!productRaw) return;
 
-        // filter course lain dalam kategori yang sama, tapi exclude yang lagi dibuka
-        const related = coursesData
-          .filter(
-            (c) =>
-              c.category_id === selected.category_id && c.id !== selected.id
-          )
-          .slice(0, 3);
-        setRelatedCourses(related);
-      }
+        const normalized = normalizeProductForLists(productRaw, usersRes.data);
+        setProduct(normalized);
 
-      // Pilih category berdasarkan id
-      const category = categoriesData.find(
-        (item) => item.id === selected.category_id
-      );
-      if (category) {
-        setCategory(category);
-      }
+        // cari related products
+        const related = productsRes.data
+          .filter((p) => p.id !== productRaw.id)
+          .sort((a, b) => {
+            if (a.category === productRaw.category) return -1;
+            if (b.category === productRaw.category) return 1;
+            if (a.instructorId === productRaw.instructorId) return -0.5;
+            if (b.instructorId === productRaw.instructorId) return 0.5;
+            return 0;
+          })
+          .slice(0, 3)
+          .map((p) => normalizeProductForLists(p, usersRes.data));
 
-      // Pilih lessons berdasarkan course_id
-      const lessons = lessonsData.filter(
-        (item) => item.course_id === selected.id
-      );
-      if (lessons) {
-        setLessons(lessons);
+        setRelatedProducts(related);
+      } catch (err) {
+        console.error(err);
       }
     };
 
@@ -82,15 +64,15 @@ export default function ProductDetails() {
   }, [slug]);
 
   useEffect(() => {
-    // Scroll to top when the course has been loaded/updated
-    if (course) {
+    // Scroll to top when the product has been loaded/updated
+    if (product) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [course]);
+  }, [product]);
 
-  if (!course) return <p className="text-center py-10">LoadingA...</p>;
+  if (!product) return <p className="text-center py-10">Loading...</p>;
 
-  const { hasDiscount, formatted } = getFinalPrice(course.price);
+  const { hasDiscount, formatted } = getFinalPrice(product.price);
 
   return (
     <>
@@ -107,19 +89,22 @@ export default function ProductDetails() {
           <li>
             <div className="flex items-center">
               <span className="text-text-dark-disabled">/</span>
-              <Link
+              {/* <Link
                 to="#"
                 className="ms-1 text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary md:ms-2"
               >
-                {category?.id}
-              </Link>
+                {product.category}
+              </Link> */}
+              <span className="ms-1 text-sm font-medium text-text-dark-disabled md:ms-2">
+                {product.category}
+              </span>
             </div>
           </li>
           <li aria-current="page">
             <div className="flex items-center">
               <span className="text-text-dark-disabled">/</span>
               <span className="ms-1 text-sm font-medium text-text-dark-primary md:ms-2">
-                {course.title}
+                {product.title}
               </span>
             </div>
           </li>
@@ -129,8 +114,8 @@ export default function ProductDetails() {
       {/* Hero Section */}
       <section className="relative w-full h-[400px] rounded-[10px] overflow-hidden mt-8">
         <img
-          src={course.thumbnail}
-          alt={course.title}
+          src={product.thumbnail}
+          alt={product.title}
           className="w-full h-full object-cover"
         />
 
@@ -140,14 +125,14 @@ export default function ProductDetails() {
         {/* Content */}
         <div className="absolute inset-0 w-full flex flex-col justify-center items-start gap-2.5 md:gap-6 text-white text-left px-5 md:px-20! xl:px-[140px]!">
           <h1 className="text-2xl! md:text-3xl! lg:text-[48px]! font-bold leading-tight">
-            {course.title}
+            {product.title}
           </h1>
-          <p className="w-full text-sm md:text-base! font-medium leading-relaxed truncate">
-            {course.description}
+          <p className="w-full text-sm md:text-base! font-medium leading-relaxed">
+            {truncateText(product.description, 100)}
           </p>
           <RatingStars
-            rating={course.rating?.stars || 0}
-            reviews={course.rating?.reviews || 0}
+            rating={product.rating?.stars || 0}
+            reviews={product.rating?.reviews || 0}
             emptyStarColor="text-text-light-disabled"
             textColor="text-text-light-secondary"
           />
@@ -168,7 +153,7 @@ export default function ProductDetails() {
               <div className="flex items-center gap-2">
                 {hasDiscount ? (
                   <>
-                    <span className="text-base md:text-lg! font-semibold text-primary">
+                    <span className="text-base md:text-lg! font-semibold text-text-dark-primary">
                       {formatted.final}
                     </span>
                     <span className="text-sm md:text-base font-medium text-text-dark-disabled line-through">
@@ -176,12 +161,12 @@ export default function ProductDetails() {
                     </span>
                   </>
                 ) : (
-                  <span className="text-base md:text-lg! font-semibold text-primary">
+                  <span className="text-base md:text-lg! font-semibold text-text-dark-primary">
                     {formatted.final}
                   </span>
                 )}
               </div>
-              <span className="inline-block bg-secondary text-white font-normal rounded-[10px] text-xs px-1 py-2.5">
+              <span className="inline-block bg-main-secondary text-white font-normal rounded-[10px] text-xs px-1 py-2.5">
                 Diskon 50%
               </span>
             </div>
@@ -192,7 +177,7 @@ export default function ProductDetails() {
           <div className="w-full flex flex-col items-start gap-3 md:gap-4">
             <Link
               to="#"
-              className="w-full inline-block bg-primary hover:bg-transparent text-white text-center hover:text-primary border border-primary md:font-bold rounded-[10px] text-sm md:text-base! px-[22px] py-[7px] md:px-[26px]! md:py-2.5! transition-colors duration-300"
+              className="w-full inline-block bg-main-primary hover:bg-transparent text-white text-center hover:text-main-primary border border-main-primary md:font-bold rounded-[10px] text-sm md:text-base! px-[22px] py-[7px] md:px-[26px]! md:py-2.5! transition-colors duration-300"
             >
               Beli Sekarang
             </Link>
@@ -257,7 +242,7 @@ export default function ProductDetails() {
                 Deskripsi
               </h5>
               <p className="text-sm md:text-base! font-medium text-text-dark-secondary leading-tight tracking-[0.2px]">
-                {course.description}
+                {product.description}
               </p>
             </div>
           </div>
@@ -274,10 +259,12 @@ export default function ProductDetails() {
                 <div className="flex items-start gap-2.5">
                   <Link to="#" className="block shrink-0">
                     <img
-                      alt={course.instructor.name}
+                      alt={product.instructor.name}
                       src={
-                        course.instructor.profile_image ||
-                        "https://via.placeholder.com/48?text=?"
+                        product.instructor.avatar ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          product.instructor?.name || "User"
+                        )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
                     />
@@ -285,16 +272,16 @@ export default function ProductDetails() {
 
                   <div className="flex flex-col">
                     <p className="text-sm md:text-base font-medium">
-                      <Link to="#">{course.instructor.name}</Link>
+                      <Link to="#">{product.instructor.name}</Link>
                     </p>
 
                     <p className="text-xs md:text-sm font-normal text-text-dark-secondary">
-                      {course.instructor.position}{" "}
-                      {course.instructor.company && (
+                      {product.instructor.position}{" "}
+                      {product.instructor.company && (
                         <>
                           di{" "}
                           <span className="font-bold!">
-                            {course.instructor.company}
+                            {product.instructor.company}
                           </span>
                         </>
                       )}
@@ -313,10 +300,12 @@ export default function ProductDetails() {
                 <div className="flex items-start gap-2.5">
                   <Link to="#" className="block shrink-0">
                     <img
-                      alt={course.instructor.name}
+                      alt={product.instructor.name}
                       src={
-                        course.instructor.profile_image ||
-                        "https://via.placeholder.com/48?text=?"
+                        product.instructor.avatar ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          product.instructor?.name || "User"
+                        )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
                     />
@@ -324,16 +313,16 @@ export default function ProductDetails() {
 
                   <div className="flex flex-col">
                     <p className="text-sm md:text-base font-medium">
-                      <Link to="#">{course.instructor.name}</Link>
+                      <Link to="#">{product.instructor.name}</Link>
                     </p>
 
                     <p className="text-xs md:text-sm font-normal text-text-dark-secondary">
-                      {course.instructor.position}{" "}
-                      {course.instructor.company && (
+                      {product.instructor.position}{" "}
+                      {product.instructor.company && (
                         <>
                           di{" "}
                           <span className="font-bold!">
-                            {course.instructor.company}
+                            {product.instructor.company}
                           </span>
                         </>
                       )}
@@ -410,8 +399,10 @@ export default function ProductDetails() {
                     <img
                       alt={name}
                       src={
-                        course.profile_image ||
-                        "https://via.placeholder.com/48?text=?"
+                        product.instructor.avatar ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          product.instructor?.name || "User"
+                        )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
                     />
@@ -423,11 +414,13 @@ export default function ProductDetails() {
                     </p>
 
                     <p className="text-xs md:text-sm font-normal text-text-dark-secondary">
-                      {course.position}{" "}
-                      {course.company && (
+                      {product.instructor.position}{" "}
+                      {product.instructor.company && (
                         <>
                           di{" "}
-                          <span className="font-bold!">{course.company}</span>
+                          <span className="font-bold!">
+                            {product.instructor.company}
+                          </span>
                         </>
                       )}
                     </p>
@@ -448,8 +441,10 @@ export default function ProductDetails() {
                     <img
                       alt={name}
                       src={
-                        course.profile_image ||
-                        "https://via.placeholder.com/48?text=?"
+                        product.instructor.avatar ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          product.instructor?.name || "User"
+                        )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
                     />
@@ -461,11 +456,13 @@ export default function ProductDetails() {
                     </p>
 
                     <p className="text-xs md:text-sm font-normal text-text-dark-secondary">
-                      {course.position}{" "}
-                      {course.company && (
+                      {product.instructor.position}{" "}
+                      {product.instructor.company && (
                         <>
                           di{" "}
-                          <span className="font-bold!">{course.company}</span>
+                          <span className="font-bold!">
+                            {product.instructor.company}
+                          </span>
                         </>
                       )}
                     </p>
@@ -495,10 +492,10 @@ export default function ProductDetails() {
         </div>
 
         {/* Menu Card */}
-        {relatedCourses.length > 0 ? (
+        {relatedProducts.length > 0 ? (
           <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:gap-6">
             <AnimatePresence>
-              {relatedCourses.map((course) => (
+              {relatedProducts.map((course) => (
                 <motion.div
                   key={course.id}
                   layout

@@ -1,3 +1,4 @@
+import { validateImageFile } from "../validators/validateImageFile";
 import { validateSlug } from "../validators/validateSlug";
 
 
@@ -16,14 +17,7 @@ export const validateCreateProductForm = (name, value, form) => {
       return "";
 
     case "thumbnail":
-      if (!value) return "Thumbnail wajib diupload";
-      if (!(value instanceof File))
-        return "File thumbnail tidak valid";
-      if (!value.type.startsWith("image/"))
-        return "Thumbnail harus berupa gambar";
-      if (value.size > 2 * 1024 * 1024)
-        return "Ukuran thumbnail maksimal 2MB";
-      return "";
+      return validateImageFile(value);        
 
     case "description":
       if (!value) return "Deskripsi wajib diisi";

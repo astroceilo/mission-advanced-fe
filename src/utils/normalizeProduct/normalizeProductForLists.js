@@ -1,4 +1,4 @@
-export function normalizeProduct(product, users = []) {
+export function normalizeProductForLists(product, users = []) {
   const instructor = users.find((u) => String(u.id) === String(product.instructorId)) ?? null;
 
   return {
@@ -30,5 +30,8 @@ export function normalizeProduct(product, users = []) {
       stars: Number(product.ratingValue) || 0,
       reviews: Number(product.ratingCount) || 0,
     },
+
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
   };
 }

@@ -1,19 +1,3 @@
-// export const formatPrice = (value) => {
-//   if (!value || isNaN(value)) return "Rp 0";
-
-//   if (value >= 1_000_000) {
-//     return `Rp ${(value / 1_000_000)
-//       .toFixed(1)
-//       .replace(/\.0$/, "")}JT`;
-//   }
-
-//   if (value >= 1_000) {
-//     return `Rp ${(value / 1_000).toFixed(0)}K`;
-//   }
-
-//   return `Rp ${value}`;
-// };
-
 // Compact (Home, Card, Listing)
 export const formatPriceCompact = (value) => {
   if (!value || isNaN(value)) return "Rp 0";

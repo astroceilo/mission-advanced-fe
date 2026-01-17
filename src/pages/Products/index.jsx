@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 
 import { normalizeProductForView } from "../../utils/normalizeProduct/normalizeProductForView";
 import SortDropdown from "../../components/Dropdown/SortDropdown";
+import Pagination from "../../components/Pagination/Pagination";
+import SearchInput from "../../components/SearchInput";
 import FilterSidebar from "./components/FilterSidebar";
-import Pagination from "../../components/Pagination";
 import CardCourse from "../../components/CardCourse";
 import { getFinalPrice } from "../../utils/price";
 import { api } from "../../services/api";
@@ -195,19 +196,11 @@ export default function Products() {
                   setSortOption={setSortOption}
                 />
 
-                <div className="relative w-full md:w-auto">
-                  <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
-                    <Search className="text-text-dark-secondary" size={18} />
-                  </div>
-                  <input
-                    type="search"
-                    id="default-search"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="block w-full p-3.5 pe-10 text-sm text-gray-900 border border-other-border rounded-[10px] bg-white focus:ring-main-primary focus:border-main-primary"
-                    placeholder="Cari Kelas..."
-                  />
-                </div>
+                <SearchInput
+                  value={search}
+                  onChange={setSearch}
+                  placeholder="Cari Kelas..."
+                />
               </div>
             </div>
 
@@ -245,6 +238,7 @@ export default function Products() {
 
             {/* End Course Card */}
 
+            {/* Pagination */}
             {totalPages > 1 && (
               <Pagination
                 currentPage={currentPage}
