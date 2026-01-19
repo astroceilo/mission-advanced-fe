@@ -79,12 +79,26 @@ export default function DetailProducts() {
       <nav className="flex" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
           <li className="inline-flex items-center">
-            <Link
-              to="/"
+            {/* <Link
+              to="/dashboard"
               className="inline-flex items-center text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary"
             >
-              Beranda
-            </Link>
+              Dashboard
+            </Link> */}
+            <span className="inline-flex items-center text-sm font-medium text-text-dark-disabled">
+              Dashboard
+            </span>
+          </li>
+          <li>
+            <div className="flex items-center">
+              <span className="text-text-dark-disabled">/</span>
+              <Link
+                to="/list-products"
+                className="ms-1 text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary md:ms-2"
+              >
+                List Products
+              </Link>
+            </div>
           </li>
           <li>
             <div className="flex items-center">
@@ -263,7 +277,7 @@ export default function DetailProducts() {
                       src={
                         product.instructor.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          product.instructor?.name || "User"
+                          product.instructor?.name || "User",
                         )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
@@ -304,7 +318,7 @@ export default function DetailProducts() {
                       src={
                         product.instructor.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          product.instructor?.name || "User"
+                          product.instructor?.name || "User",
                         )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
@@ -401,7 +415,7 @@ export default function DetailProducts() {
                       src={
                         product.instructor.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          product.instructor?.name || "User"
+                          product.instructor?.name || "User",
                         )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
@@ -443,7 +457,7 @@ export default function DetailProducts() {
                       src={
                         product.instructor.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          product.instructor?.name || "User"
+                          product.instructor?.name || "User",
                         )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"

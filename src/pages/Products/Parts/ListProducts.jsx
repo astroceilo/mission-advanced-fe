@@ -1,5 +1,8 @@
+import { Loader, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 import { normalizeProductForLists } from "../../../utils/normalizeProduct/normalizeProductForLists";
 import SortFieldDropdown from "../../../components/Dropdown/SortFieldDropdown";
@@ -20,6 +23,8 @@ export default function ListProducts() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  const [deletingId, setDeletingId] = useState(null);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -36,10 +41,15 @@ export default function ListProducts() {
 
         // normalisasi data
         const mergedData = products.map((product) =>
-          normalizeProductForLists(product, users)
+          normalizeProductForLists(product, users),
         );
 
-        setProducts(mergedData);
+        // sorting by newest
+        const sortedCourses = mergedData.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        );
+
+        setProducts(sortedCourses);
       } catch (err) {
         console.error(err);
       } finally {
@@ -86,7 +96,7 @@ export default function ListProducts() {
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   useEffect(() => {
@@ -96,6 +106,44 @@ export default function ListProducts() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentPage]);
+
+  // delete product handler
+  const handleDeleteProduct = async (id) => {
+    const result = await Swal.fire({
+      title: "Yakin mau hapus produk ini?",
+      text: "Data yang dihapus nggak bisa dikembalikan!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, hapus!",
+      cancelButtonText: "Batal",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      setDeletingId(id);
+      await api.delete(`/products/${id}`);
+
+      // langsung update state (tanpa reload)
+      setProducts((prev) => {
+        const updated = prev.filter((product) => product.id !== id);
+
+        const maxPage = Math.ceil(updated.length / itemsPerPage);
+        if (currentPage > maxPage) {
+          setCurrentPage(maxPage || 1);
+        }
+
+        return updated;
+      });
+
+      Swal.fire("Deleted!", "Produk berhasil dihapus", "success");
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal menghapus produk");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <>
@@ -111,18 +159,33 @@ export default function ListProducts() {
 
         {/* Header Filter + Search */}
         <div className="w-full">
-          <div className="flex items-center justify-center md:justify-end! gap-4 w-full">
-            <SortFieldDropdown sortOption={sortBy} setSortOption={setSortBy} />
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex items-center justify-center md:justify-start! gap-4 w-full">
+              {/* Button New Products */}
+              <Link
+                to="/list-products/create-products"
+                className="w-full md:w-auto rounded-[10px] text-center bg-main-primary hover:bg-transparent py-2.5 px-[26px] font-dm font-bold text-sm md:text-base! leading-[1.4] tracking-[0.2px] text-text-light-primary hover:text-main-primary border border-main-primary transition cursor-pointer"
+              >
+                New Products
+              </Link>
+            </div>
+            <div className="flex items-center justify-center md:justify-end! gap-4 w-full">
+              <SortFieldDropdown
+                sortOption={sortBy}
+                setSortOption={setSortBy}
+              />
 
-            <SearchInput value={search} onChange={setSearch} />
+              <SearchInput value={search} onChange={setSearch} />
+            </div>
           </div>
         </div>
 
         {/* Table */}
-        <div className="relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
-          <table className="w-full text-sm text-left rtl:text-right text-body">
-            <thead className="text-sm text-body bg-neutral-secondary-medium border-b border-default-medium">
+        <div className="relative overflow-x-auto bg-white shadow-xs rounded-[10px] border border-other-border">
+          <table className="w-full text-sm text-left rtl:text-right text-text-dark-primary">
+            <thead className="text-sm text-text-dark-primary bg-other-primarybg border-b border-b-other-border">
               <tr>
+                <th scope="col" className="px-6 py-3 font-medium"></th>
                 <th scope="col" className="px-6 py-3 font-medium">
                   Product name
                 </th>
@@ -155,7 +218,10 @@ export default function ListProducts() {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center">
+                  <td
+                    colSpan={9}
+                    className="px-6 py-4 text-center text-text-dark-disabled"
+                  >
                     Loading...
                   </td>
                 </tr>
@@ -163,29 +229,35 @@ export default function ListProducts() {
 
               {!loading && paginatedProducts.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-muted">
+                  <td
+                    colSpan={9}
+                    className="px-6 py-4 text-center text-text-dark-disabled"
+                  >
                     Data tidak ditemukan
                   </td>
                 </tr>
               )}
 
               {!loading &&
-                paginatedProducts.map((product) => (
+                paginatedProducts.map((product, index) => (
                   <tr
-                    key={product.id}
-                    className="bg-neutral-primary-soft border-b border-default hover:bg-neutral-secondary-medium"
+                    key={index}
+                    className="bg-other-secondarybg border-b border-b-other-border hover:bg-other-basebg transition-colors duration-300 ease-in-out"
                   >
-                    <th className="px-6 py-4 font-medium whitespace-nowrap">
+                    <td className="px-6 py-4 font-medium whitespace-nowrap">
+                      {index + 1 + (currentPage - 1) * itemsPerPage}
+                    </td>
+                    <td className="px-6 py-4 font-medium whitespace-nowrap">
                       <Link
                         to={
                           product.slug
-                            ? `/detail-products/${product.slug.toLowerCase().replace(/\s+/g, "-")}`
+                            ? `/list-products/detail-products/${product.slug.toLowerCase().replace(/\s+/g, "-")}`
                             : "#"
                         }
                       >
                         {truncateText(product.title, 50)}
                       </Link>
-                    </th>
+                    </td>
                     <td className="px-6 py-4">
                       {truncateText(product.slug, 35)}
                     </td>
@@ -197,7 +269,8 @@ export default function ListProducts() {
                     </td>
                     <td className="px-6 py-4">
                       {formatPriceFull(
-                        product.price.original - (product.price.discounted ?? 0)
+                        product.price.original -
+                          (product.price.discounted ?? 0),
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -213,13 +286,25 @@ export default function ListProducts() {
                     <td className="px-6 py-4">
                       {product.instructor?.name || "-"}
                     </td>
-                    <td className="px-6 py-4 flex gap-4">
-                      <button className="text-fg-brand hover:underline">
-                        Edit
-                      </button>
-                      <button className="text-red-500 hover:underline">
-                        Delete
-                      </button>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-4">
+                        <button className="text-fg-brand hover:underline">
+                          <Link
+                            to={`/list-products/update-products/${product.id}/${product.slug}`}
+                            className="text-main-secondary hover:text-main-secondary-400"
+                          >
+                            {/* Edit */}
+                            <Pencil />
+                          </Link>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(product.id)}
+                          disabled={deletingId === product.id}
+                          className="text-red-500 hover:underline disabled:opacity-50 hover:text-red-400 cursor-pointer"
+                        >
+                          {deletingId === product.id ? <Loader /> : <Trash2 />}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

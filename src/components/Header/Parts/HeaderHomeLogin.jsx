@@ -40,16 +40,6 @@ export default function HeaderHomeLogin({ handleLogout }) {
                 </NavLink>
               </li>
             ))}
-            {/* {adminMenuItems.map((item) => (
-              <li key={item.name}>
-                <NavLink
-                  to={item.href}
-                  className="block py-2 px-3 text-text-dark-secondary hover:text-text-dark-primary text-other-body-medium-h3 transition-colors duration-300 ease-in-out"
-                >
-                  {item.name}
-                </NavLink>
-              </li>
-            ))} */}
             <div ref={menuRef} className="relative">
               {/* Dropdown menu toggle */}
               <li>
@@ -57,7 +47,7 @@ export default function HeaderHomeLogin({ handleLogout }) {
                   onClick={toggleMenu}
                   className="block py-2 px-3 text-text-dark-secondary hover:text-text-dark-primary text-other-body-medium-h3 transition-colors duration-300 ease-in-out"
                 >
-                  Products
+                  Admin Products
                 </NavLink>
               </li>
               {/* Dropdown Nav */}
@@ -68,17 +58,33 @@ export default function HeaderHomeLogin({ handleLogout }) {
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.25, ease: "easeInOut" }}
-                    className="absolute w-full left-0 right-0 bg-white shadow-lg z-20 overflow-hidden"
+                    className="absolute right-0 z-10 mt-1 w-[200px] origin-top-right"
                   >
-                    <nav className="flex flex-col">
-                      {adminMenuItems.map((item) => (
-                        <Link
-                          key={item.name}
-                          to={item.href}
-                          className="block w-full px-4 py-3 border border-other-border text-other-body-medium-h3 text-text-dark-secondary hover:text-text-dark-primary transition-colors duration-300 ease-in-out"
+                    <nav
+                      className="rounded-[10px] border border-other-border bg-white overflow-hidden"
+                      style={{
+                        boxShadow:
+                          "rgba(62, 67, 74, 0.31) 0px 0px 1px 0px, rgba(62, 67, 74, 0.15) 0px 18px 28px 0px",
+                      }}
+                    >
+                      {/* Dropdown menu items */}
+                      {adminMenuItems.map((item, idx) => (
+                        <motion.div
+                          key={idx}
+                          whileHover={{
+                            backgroundColor: "rgba(247,248,249,1)",
+                            scale: 1.02,
+                          }}
+                          transition={{ duration: 0.15 }}
                         >
-                          {item.name}
-                        </Link>
+                          <Link
+                            key={item.name}
+                            to={item.href}
+                            className="block w-full font-dm font-medium text-base leading-[1.4] tracking-[0.2px] border-b border-other-border px-4 py-3 text-text-dark-secondary hover:text-text-dark-primary"
+                          >
+                            {item.name}
+                          </Link>
+                        </motion.div>
                       ))}
                     </nav>
                   </motion.div>

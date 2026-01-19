@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -69,7 +69,7 @@ export default function CreateProducts() {
         discount: Number(form.discount) || 0,
         final: (Number(form.price) || 0) - (Number(form.discount) || 0),
       },
-      formatPriceFull
+      formatPriceFull,
     );
     setPriceInfo(updatedPriceInfo);
   }, [form.price, form.discount]);
@@ -189,11 +189,11 @@ export default function CreateProducts() {
 
       toast.success(
         "Produk berhasil dibuat 🚀, cek Console atau lihat Products (kecuali Thumbnail)",
-        { autoClose: 2000 }
+        { autoClose: 2000 },
       );
 
       setTimeout(() => {
-        navigate("/create-products");
+        navigate("/list-products");
       }, 2000);
     } catch (err) {
       console.error("Product creation failed:", err);
@@ -205,6 +205,42 @@ export default function CreateProducts() {
 
   return (
     <>
+      {/* Breadcrumb */}
+      <nav className="flex" aria-label="Breadcrumb">
+        <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+          <li className="inline-flex items-center">
+            {/* <Link
+              to="/dashboard"
+              className="inline-flex items-center text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary"
+            >
+              Dashboard
+            </Link> */}
+            <span className="inline-flex items-center text-sm font-medium text-text-dark-disabled">
+              Dashboard
+            </span>
+          </li>
+          <li>
+            <div className="flex items-center">
+              <span className="text-text-dark-disabled">/</span>
+              <Link
+                to="/list-products"
+                className="ms-1 text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary md:ms-2"
+              >
+                List Products
+              </Link>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div className="flex items-center">
+              <span className="text-text-dark-disabled">/</span>
+              <span className="ms-1 text-sm font-medium text-text-dark-primary md:ms-2">
+                Create Products
+              </span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+
       {/* Section Create Products */}
       <section className="relative w-full flex flex-col gap-6 md:gap-8!">
         {/* Title */}
@@ -240,7 +276,8 @@ export default function CreateProducts() {
                     errors.title
                       ? "border-red-500 focus:ring-red-400"
                       : "border-other-border focus:ring-main-primary-400"
-                  }${
+                  }
+                  ${
                     form.title === ""
                       ? "placeholder:text-text-dark-disabled text-text-dark-disabled"
                       : "text-text-dark-primary"
@@ -272,8 +309,9 @@ export default function CreateProducts() {
                       errors.slug
                         ? "border-red-500 focus:ring-red-400"
                         : "border-other-border focus:ring-main-primary-400"
-                    }${
-                      form.title === ""
+                    }
+                    ${
+                      form.slug === ""
                         ? "placeholder:text-text-dark-disabled text-text-dark-disabled"
                         : "text-text-dark-primary"
                     }`}
@@ -375,11 +413,12 @@ export default function CreateProducts() {
                   value={form.description}
                   onChange={handleChange}
                   placeholder="Masukkan Deskripsi"
-                  className={`w-full font-dm font-normal text-sm md:text-base! leading-[1.4] tracking-[0.2px] border rounded-md px-3 py-2 focus:ring-2 focus:outline-none transition ${
+                  className={`w-full h-[100px] font-dm font-normal text-sm md:text-base! leading-[1.4] tracking-[0.2px] border rounded-md px-3 py-2 focus:ring-2 focus:outline-none transition ${
                     errors.description
                       ? "border-red-500 focus:ring-red-400"
                       : "border-other-border focus:ring-main-primary-400"
-                  }${
+                  }
+                  ${
                     form.description === ""
                       ? "placeholder:text-text-dark-disabled text-text-dark-disabled"
                       : "text-text-dark-primary"
@@ -415,7 +454,8 @@ export default function CreateProducts() {
                         errors.price
                           ? "border-red-500 focus:ring-red-400"
                           : "border-other-border focus:ring-main-primary-400"
-                      }${
+                      }
+                      ${
                         form.price === ""
                           ? "placeholder:text-text-dark-disabled text-text-dark-disabled"
                           : "text-text-dark-primary"
@@ -448,7 +488,8 @@ export default function CreateProducts() {
                         errors.discount
                           ? "border-red-500 focus:ring-red-400"
                           : "border-other-border focus:ring-main-primary-400"
-                      }${
+                      }
+                      ${
                         form.discount === ""
                           ? "placeholder:text-text-dark-disabled text-text-dark-disabled"
                           : "text-text-dark-primary"

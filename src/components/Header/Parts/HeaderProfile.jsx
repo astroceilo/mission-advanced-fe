@@ -7,7 +7,6 @@ import useClickOutsideMulti from "../../../hooks/useClickOutsideMulti";
 import { useAuth } from "../../../context/AuthContext";
 import { profileMenuItems } from "../HeaderMenuItems";
 
-
 export default function HeaderProfile({ handleLogout }) {
   const { user } = useAuth();
   const [error, setError] = useState(false);
@@ -52,13 +51,13 @@ export default function HeaderProfile({ handleLogout }) {
             role="menu"
           >
             <div
-              className="rounded-md border border-other-border bg-white overflow-hidden"
+              className="rounded-[10px] border border-other-border bg-white overflow-hidden"
               style={{
                 boxShadow:
                   "0px 0px 1px 0px rgba(62, 67, 74, 0.31), 0px 18px 28px 0px rgba(62, 67, 74, 0.15)",
               }}
             >
-              {/* item menu */}
+              {/* Dropdown menu items */}
               {profileMenuItems.map((item, idx) => (
                 <motion.div
                   key={idx}
@@ -69,6 +68,7 @@ export default function HeaderProfile({ handleLogout }) {
                   transition={{ duration: 0.15 }}
                 >
                   <Link
+                    key={item.name}
                     to={item.href}
                     className="block w-full font-dm font-medium text-base leading-[1.4] tracking-[0.2px] border-b border-other-border px-4 py-3 text-text-dark-secondary hover:text-text-dark-primary"
                     role="menuitem"

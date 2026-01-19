@@ -43,10 +43,15 @@ export default function Products() {
 
         // mapping instructor
         const mergedData = products.map((p) =>
-          normalizeProductForView(p, users)
+          normalizeProductForView(p, users),
         );
 
-        setCourses(mergedData);
+        // sorting by newest
+        const sortedCourses = mergedData.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        );
+
+        setCourses(sortedCourses);
 
         // kategori bisa hardcode dulu (MockAPI limit)
         setCategories([
@@ -135,13 +140,13 @@ export default function Products() {
 
   const filteredCourses = sortCourses(
     filterCourses(courses, { search, activeFilters }),
-    sortOption
+    sortOption,
   );
 
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
   const paginatedCourses = filteredCourses.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   useEffect(() => {

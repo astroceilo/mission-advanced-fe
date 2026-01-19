@@ -3,9 +3,8 @@ export const generalMenuItems = [
 ];
 
 export const adminMenuItems = [
-    { name: "Product Lists", href: "/product-lists" },
-    { name: "New Products", href: "/create-products" },
-    { name: "Update Products", href: "/update-products" },
+    { name: "Product Lists", href: "/list-products" },
+    { name: "New Products", href: "/list-products/create-products" },
 ];
 
 export const profileMenuItems = [

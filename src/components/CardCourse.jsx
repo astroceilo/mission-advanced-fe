@@ -43,7 +43,7 @@ export default function CardCourse({ course }) {
               <Link
                 to={
                   slug
-                    ? `/product/${slug.toLowerCase().replace(/\s+/g, "-")}`
+                    ? `/products/${slug.toLowerCase().replace(/\s+/g, "-")}`
                     : "#"
                 }
               >

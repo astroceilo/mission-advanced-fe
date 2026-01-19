@@ -1,10 +1,10 @@
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-import { validateCreateProductForm } from "../../../utils/validationsProduct/validateCreateProductForm";
-import { normalizeProductForCreate } from "../../../utils/normalizeProduct/normalizeProductForCreate";
+import { validateUpdateProductForm } from "../../../utils/validationsProduct/validateUpdateProductForm";
+import { normalizeProductForUpdate } from "../../../utils/normalizeProduct/normalizeProductForUpdate";
 import { validateImageFile } from "../../../utils/validators/validateImageFile";
 import CategoryDropdown from "../../../components/Dropdown/CategoryDropdown";
 import { handleSlugChange } from "../../../utils/slug/handleSlugChange";
@@ -40,9 +40,49 @@ export default function UpdateProducts() {
     instructorId: "",
   });
 
+  // get id & slug from params
+  const { id, slug } = useParams();
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await api.get(`/products/${id}`);
+        const data = res.data;
+
+        setForm({
+          title: data.title,
+          slug: data.slug,
+          category: data.category,
+          thumbnail: null,
+          description: data.description,
+          price: String(data.price),
+          discount: String(data.discount ?? ""),
+          instructorId: String(data.instructorId),
+        });
+
+        setExistingThumbnail(data.thumbnail ?? null); // simpan existing thumbnail
+      } catch (err) {
+        console.error("Error fetching product:", err);
+        toast.error("Product nggak ketemu 😵");
+        navigate("/list-products");
+      }
+    };
+
+    if (id) fetchProduct();
+  }, [id]);
+
+  useEffect(() => {
+    if (!id || !form.slug) return;
+
+    if (slug !== form.slug) {
+      navigate(`/update-products/${id}/${form.slug}`, { replace: true });
+    }
+  }, [slug, form.slug, id]);
+
   // other state
   const [isSlugManual, setIsSlugManual] = useState(false);
   const [preview, setPreview] = useState(null);
+  const [existingThumbnail, setExistingThumbnail] = useState(null);
   const [loading, setLoading] = useState(false);
   const [priceInfo, setPriceInfo] = useState({
     original: 0,
@@ -69,7 +109,7 @@ export default function UpdateProducts() {
         discount: Number(form.discount) || 0,
         final: (Number(form.price) || 0) - (Number(form.discount) || 0),
       },
-      formatPriceFull
+      formatPriceFull,
     );
     setPriceInfo(updatedPriceInfo);
   }, [form.price, form.discount]);
@@ -103,7 +143,7 @@ export default function UpdateProducts() {
 
     setErrors((prev) => ({
       ...prev,
-      [name]: validateCreateProductForm(name, updatedForm[name], updatedForm),
+      [name]: validateUpdateProductForm(name, updatedForm[name], updatedForm),
     }));
   };
 
@@ -119,6 +159,7 @@ export default function UpdateProducts() {
 
     const previewUrl = URL.createObjectURL(file);
     setPreview(previewUrl);
+    setExistingThumbnail(null); // clear existing thumbnail since user chose new file
 
     setForm((prev) => ({ ...prev, thumbnail: file }));
     setErrors((prev) => ({ ...prev, thumbnail: "" }));
@@ -147,7 +188,7 @@ export default function UpdateProducts() {
     const newErrors = {};
 
     Object.entries(form).forEach(([key, val]) => {
-      newErrors[key] = validateCreateProductForm(key, val, form) || "";
+      newErrors[key] = validateUpdateProductForm(key, val, form) || "";
     });
 
     setErrors(newErrors);
@@ -168,36 +209,30 @@ export default function UpdateProducts() {
     setLoading(true);
 
     try {
-      const payload = normalizeProductForCreate({
-        ...form,
-        // thumbnail: "[FILE]", //dummy placeholder
-        thumbnail: "",
-      });
+      const payload = normalizeProductForUpdate(form);
 
-      delete payload.thumbnail;
+      if (!form.thumbnail) {
+        delete payload.thumbnail;
+      }
 
-      console.group("CREATE PRODUCT DEBUG");
+      console.group("UPDATE PRODUCT DEBUG");
       console.log("FORM RAW:", form);
       console.log("PAYLOAD NORMALIZED:", payload);
       console.groupEnd();
 
-      await api.post("/products", {
-        ...payload,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+      await api.put(`/products/${id}`, payload);
 
       toast.success(
-        "Produk berhasil dibuat 🚀, cek Console atau lihat Products (kecuali Thumbnail)",
-        { autoClose: 2000 }
+        "Produk berhasil diperbarui 🚀, cek Console atau lihat Products (kecuali Thumbnail)",
+        { autoClose: 2000 },
       );
 
       setTimeout(() => {
-        navigate("/create-products");
+        navigate("/list-products");
       }, 2000);
     } catch (err) {
-      console.error("Product creation failed:", err);
-      toast.error("Gagal membuat produk 😭");
+      console.error("Update product failed:", err);
+      toast.error("Gagal perbarui produk 😭");
     } finally {
       setLoading(false);
     }
@@ -205,6 +240,56 @@ export default function UpdateProducts() {
 
   return (
     <>
+      {/* Breadcrumb */}
+      <nav className="flex" aria-label="Breadcrumb">
+        <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+          <li className="inline-flex items-center">
+            {/* <Link
+              to="/dashboard"
+              className="inline-flex items-center text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary"
+            >
+              Dashboard
+            </Link> */}
+            <span className="inline-flex items-center text-sm font-medium text-text-dark-disabled">
+              Dashboard
+            </span>
+          </li>
+          <li>
+            <div className="flex items-center">
+              <span className="text-text-dark-disabled">/</span>
+              <Link
+                to="/list-products"
+                className="ms-1 text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary md:ms-2"
+              >
+                List Products
+              </Link>
+            </div>
+          </li>
+          <li>
+            <div className="flex items-center">
+              <span className="text-text-dark-disabled">/</span>
+              {/* <Link
+                to="#"
+                className="ms-1 text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary md:ms-2"
+              >
+                {product.category}
+              </Link> */}
+              <span className="ms-1 text-sm font-medium text-text-dark-disabled md:ms-2">
+                {form.category}
+              </span>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div className="flex items-center">
+              <span className="text-text-dark-disabled">/</span>
+              <span className="ms-1 text-sm font-medium text-text-dark-primary md:ms-2">
+                {form.title}
+              </span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+
       {/* Section Update Products */}
       <section className="relative w-full flex flex-col gap-6 md:gap-8!">
         {/* Title */}
@@ -240,7 +325,8 @@ export default function UpdateProducts() {
                     errors.title
                       ? "border-red-500 focus:ring-red-400"
                       : "border-other-border focus:ring-main-primary-400"
-                  }${
+                  }
+                  ${
                     form.title === ""
                       ? "placeholder:text-text-dark-disabled text-text-dark-disabled"
                       : "text-text-dark-primary"
@@ -272,12 +358,14 @@ export default function UpdateProducts() {
                       errors.slug
                         ? "border-red-500 focus:ring-red-400"
                         : "border-other-border focus:ring-main-primary-400"
-                    }${
+                    }
+                    ${
                       form.title === ""
                         ? "placeholder:text-text-dark-disabled text-text-dark-disabled"
                         : "text-text-dark-primary"
                     }`}
-                    required
+                    required={false}
+                    disabled
                   />
 
                   {isSlugManual && (
@@ -326,14 +414,14 @@ export default function UpdateProducts() {
                   htmlFor="file_input"
                   className="block font-dm font-normal text-sm md:text-base! leading-[1.4] tracking-[0.2px] text-text-dark-secondary"
                 >
-                  Upload thumbnail <span className="text-red-500">*</span>
+                  Upload thumbnail
                 </label>
 
                 {/* Preview */}
-                {preview && (
+                {(preview || existingThumbnail) && (
                   <div className="mb-2">
                     <img
-                      src={preview}
+                      src={preview || existingThumbnail}
                       alt="Preview thumbnail"
                       className="w-40 h-40 object-cover rounded-md border border-other-border"
                     />
@@ -375,11 +463,12 @@ export default function UpdateProducts() {
                   value={form.description}
                   onChange={handleChange}
                   placeholder="Masukkan Deskripsi"
-                  className={`w-full font-dm font-normal text-sm md:text-base! leading-[1.4] tracking-[0.2px] border rounded-md px-3 py-2 focus:ring-2 focus:outline-none transition ${
+                  className={`w-full h-[100px] font-dm font-normal text-sm md:text-base! leading-[1.4] tracking-[0.2px] border rounded-md px-3 py-2 focus:ring-2 focus:outline-none transition ${
                     errors.description
                       ? "border-red-500 focus:ring-red-400"
                       : "border-other-border focus:ring-main-primary-400"
-                  }${
+                  }
+                  ${
                     form.description === ""
                       ? "placeholder:text-text-dark-disabled text-text-dark-disabled"
                       : "text-text-dark-primary"
@@ -415,7 +504,8 @@ export default function UpdateProducts() {
                         errors.price
                           ? "border-red-500 focus:ring-red-400"
                           : "border-other-border focus:ring-main-primary-400"
-                      }${
+                      }
+                      ${
                         form.price === ""
                           ? "placeholder:text-text-dark-disabled text-text-dark-disabled"
                           : "text-text-dark-primary"
@@ -448,7 +538,8 @@ export default function UpdateProducts() {
                         errors.discount
                           ? "border-red-500 focus:ring-red-400"
                           : "border-other-border focus:ring-main-primary-400"
-                      }${
+                      }
+                      ${
                         form.discount === ""
                           ? "placeholder:text-text-dark-disabled text-text-dark-disabled"
                           : "text-text-dark-primary"
@@ -492,7 +583,7 @@ export default function UpdateProducts() {
                 disabled={loading}
                 className="w-full rounded-[10px] text-center bg-main-primary hover:bg-transparent py-2.5 px-[26px] font-dm font-bold text-sm md:text-base! leading-[1.4] tracking-[0.2px] text-text-light-primary hover:text-main-primary border border-main-primary transition cursor-pointer"
               >
-                {loading ? "Saving..." : "Create Product"}
+                {loading ? "Updating..." : "Update Product"}
               </button>
             </div>
           </form>
