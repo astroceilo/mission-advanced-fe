@@ -1,55 +1,78 @@
-import { createContext, useContext, useEffect, useState, } from "react";
+import { createContext, useContext, useState } from "react";
+
+import { normalizeUser } from "../utils/normalizeUser/normalizeUser";
+import { dummyApi } from "../services/api";
 
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem("loggedInUser");
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
   });
 
-  const [isLoggedIn, setIsLoggedIn] = useState(() => !!user);
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
 
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setIsLoggedIn(!!localStorage.getItem("loggedInUser"));
-    };
+  const isLoggedIn = Boolean(token);
 
-    window.addEventListener("storage", handleStorageChange);
-    return () =>
-      window.removeEventListener("storage", handleStorageChange);
-  }, []);
+  const login = async ({ email, password }) => {
+    // Cek user by email from DummyJSON
+    const usersRes = await dummyApi.get("/users");
+    const foundUser = usersRes.data.users.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase(),
+    );
 
-  const login = (u) => {
-    localStorage.setItem("loggedInUser", JSON.stringify(u));
-    setUser(u);
-    setIsLoggedIn(true);
+    if (!foundUser) {
+      throw new Error("EMAIL_NOT_FOUND");
+    }
+
+    // Login with username and password to get token
+    try {
+      const res = await dummyApi.post("/auth/login", {
+        username: foundUser.username,
+        password,
+      });
+
+      const { accessToken } = res.data;
+      if (!accessToken) throw new Error("TOKEN_MISSING");
+
+      const normalizedUser = normalizeUser({
+        ...res.data,
+        ...foundUser,
+      });
+
+      setUser(normalizedUser);
+      setToken(accessToken);
+
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
+      localStorage.setItem("token", accessToken);
+    } catch (err) {
+      if (err.response?.status === 400) {
+        throw new Error("INVALID_PASSWORD");
+      }
+
+      console.error("Login failed:", err);
+      throw new Error("LOGIN_FAILED");
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     setUser(null);
-    setIsLoggedIn(false);
+    setToken(null);
   };
 
   return (
-    <AuthContext.Provider
-      value={{ isLoggedIn, user, login, logout }}
-    >
+    <AuthContext.Provider value={{ user, token, isLoggedIn, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used inside AuthProvider");
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
 };

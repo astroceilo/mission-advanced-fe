@@ -4,16 +4,18 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
-import { normalizeProductForLists } from "../../../utils/normalizeProduct/normalizeProductForLists";
+import { normalizeUserForLists } from "../../../utils/normalizeUser/normalizeUserForLists";
 import SortFieldDropdown from "../../../components/Dropdown/SortFieldDropdown";
 import Pagination from "../../../components/Pagination/Pagination";
 import { truncateText } from "../../../utils/truncateText";
 import SearchInput from "../../../components/SearchInput";
-import RatingStars from "../../../components/RatingStars";
+import { useAuth } from "../../../context/AuthContext";
 import { formatPriceFull } from "../../../utils/price";
-import { api } from "../../../services/api";
+import { dummyApi } from "../../../services/api";
 
-export default function ListProducts() {
+export default function ListUsers() {
+  const { user } = useAuth();
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,23 +31,29 @@ export default function ListProducts() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // const res = await api.get("/products");
 
         const [productsRes, usersRes] = await Promise.all([
-          api.get("/products"),
-          api.get("/users"),
+          dummyApi.get("/users"),
         ]);
 
         const products = productsRes.data;
-        const users = usersRes.data;
+        const users = usersRes.data.users;
 
         // normalisasi data
         const mergedData = products.map((product) =>
-          normalizeProductForLists(product, users),
+          normalizeUserForLists(product, users),
         );
 
+        // filter by role
+        const visibleProducts = mergedData.filter((product) => {
+          if (user.role === "admin") return true;
+
+          // instructor / moderator
+          return String(product.instructor?.id) === String(user.id);
+        });
+
         // sorting by newest
-        const sortedCourses = mergedData.sort(
+        const sortedCourses = visibleProducts.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
         );
 
@@ -71,7 +79,7 @@ export default function ListProducts() {
         product.title,
         product.description,
         product.category,
-        product.instructor?.name,
+        product.instructor?.fullName,
       ];
 
       return fields.some((f) => f?.toLowerCase().includes(query));
@@ -122,7 +130,7 @@ export default function ListProducts() {
 
     try {
       setDeletingId(id);
-      await api.delete(`/products/${id}`);
+      await mockApi.delete(`/products/${id}`);
 
       // langsung update state (tanpa reload)
       setProducts((prev) => {
@@ -163,7 +171,7 @@ export default function ListProducts() {
             <div className="flex items-center justify-center md:justify-start! gap-4 w-full">
               {/* Button New Products */}
               <Link
-                to="/list-products/create-products"
+                to="/dashboard/products/create"
                 className="w-full md:w-auto rounded-[10px] text-center bg-main-primary hover:bg-transparent py-2.5 px-[26px] font-dm font-bold text-sm md:text-base! leading-[1.4] tracking-[0.2px] text-text-light-primary hover:text-main-primary border border-main-primary transition cursor-pointer"
               >
                 New Products
@@ -251,7 +259,7 @@ export default function ListProducts() {
                       <Link
                         to={
                           product.slug
-                            ? `/list-products/detail-products/${product.slug.toLowerCase().replace(/\s+/g, "-")}`
+                            ? `/dashboard/products/detail/${product.slug.toLowerCase().replace(/\s+/g, "-")}`
                             : "#"
                         }
                       >
@@ -269,12 +277,11 @@ export default function ListProducts() {
                     </td>
                     <td className="px-6 py-4">
                       {formatPriceFull(
-                        product.price.original -
-                          (product.price.discounted ?? 0),
+                        product.price.original - (product.price.discount ?? 0),
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      {formatPriceFull(product.price.discounted ?? 0)}
+                      {formatPriceFull(product.price.discount ?? 0)}
                     </td>
                     {/* <td className="px-6 py-4">
                       <RatingStars
@@ -284,27 +291,34 @@ export default function ListProducts() {
                       />
                     </td> */}
                     <td className="px-6 py-4">
-                      {product.instructor?.name || "-"}
+                      {product.instructor?.fullName || "-"}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex gap-4">
-                        <button className="text-fg-brand hover:underline">
-                          <Link
-                            to={`/list-products/update-products/${product.id}/${product.slug}`}
-                            className="text-main-secondary hover:text-main-secondary-400"
+                      {(user.role === "admin" ||
+                        String(product.instructor?.id) === String(user.id)) && (
+                        <div className="flex gap-4">
+                          <button className="text-fg-brand hover:underline">
+                            <Link
+                              to={`/dashboard/products/update/${product.id}/${product.slug}`}
+                              className="text-main-secondary hover:text-main-secondary-400"
+                            >
+                              {/* Edit */}
+                              <Pencil />
+                            </Link>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(product.id)}
+                            disabled={deletingId === product.id}
+                            className="text-red-500 hover:underline disabled:opacity-50 hover:text-red-400 cursor-pointer"
                           >
-                            {/* Edit */}
-                            <Pencil />
-                          </Link>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteProduct(product.id)}
-                          disabled={deletingId === product.id}
-                          className="text-red-500 hover:underline disabled:opacity-50 hover:text-red-400 cursor-pointer"
-                        >
-                          {deletingId === product.id ? <Loader /> : <Trash2 />}
-                        </button>
-                      </div>
+                            {deletingId === product.id ? (
+                              <Loader />
+                            ) : (
+                              <Trash2 />
+                            )}
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

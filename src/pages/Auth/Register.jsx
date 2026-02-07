@@ -7,16 +7,18 @@ import { toast } from "react-toastify";
 
 import { validateRegisterForm } from "../../utils/validations/validateRegisterForm";
 import GenderDropdown from "../../components/Dropdown/GenderDropdown";
+// import { useAuth } from "../../context/AuthContext";
+// import { dummyApi } from "../../services/api";
+import { useRegisterDemo } from "../../hooks/auth/useRegisterDemo";
 import PhoneInputCustom from "../../components/PhoneInputCustom";
-import { useAuth } from "../../context/AuthContext";
-import { api } from "../../services/api";
 
 export default function Register() {
-  const { login } = useAuth();
+  // const { login } = useAuth();
+  const { registerDemo } = useRegisterDemo();
 
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    fullname: "",
+    fullName: "",
     email: "",
     gender: "",
     phone: "",
@@ -25,7 +27,7 @@ export default function Register() {
   });
 
   const [errors, setErrors] = useState({
-    fullname: "",
+    fullName: "",
     email: "",
     gender: "",
     phone: "",
@@ -35,7 +37,7 @@ export default function Register() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  // const [payload, setPayload] = useState(null);
+  const [payload, setPayload] = useState(null);
   // const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -59,14 +61,14 @@ export default function Register() {
       updatedErrors.confirmPassword = validateRegisterForm(
         "confirmPassword",
         form.confirmPassword,
-        updatedForm
+        updatedForm,
       );
     }
     if (name === "confirmPassword" && form.password) {
       updatedErrors.confirmPassword = validateRegisterForm(
         "confirmPassword",
         value,
-        updatedForm
+        updatedForm,
       );
     }
 
@@ -88,7 +90,7 @@ export default function Register() {
   // helper: validate all field now (sinkron)
   const validateAll = () => {
     const newErrors = {
-      fullname: "",
+      fullName: "",
       email: "",
       gender: "",
       phone: "",
@@ -104,7 +106,7 @@ export default function Register() {
     // return true if all empty (valid)
     return !Object.values(newErrors).some(
       (msg) =>
-        msg && (typeof msg === "string" ? msg.length > 0 : msg.length > 0)
+        msg && (typeof msg === "string" ? msg.length > 0 : msg.length > 0),
     );
   };
 
@@ -118,51 +120,59 @@ export default function Register() {
       return;
     }
 
-    const parsed = parsePhoneNumberFromString(form.phone || "");
-    if (!parsed || !parsed.isValid()) {
-      toast.error("Nomor telepon tidak valid!");
-      return;
-    }
+    // try {
+    //   setLoading(true);
+
+    //   // cek email
+    //   const checkEmail = await mockApi.get("/users");
+
+    //   const isExist = checkEmail.data.some(
+    //     (u) => u.email === form.email.trim(),
+    //   );
+
+    //   if (isExist) {
+    //     toast.warning("Email sudah terdaftar");
+    //     return;
+    //   }
+
+    //   // register
+    //   const res = await mockApi.post("/users", {
+    //     fullName: form.fullName,
+    //     email: form.email,
+    //     gender: form.gender,
+    //     phone: parsed.number,
+    //     password: form.password,
+    //     role: "student",
+    //   });
+
+    //   toast.success("Pendaftaran berhasil! 🎉", { autoClose: 2000 });
+
+    //   login(res.data);
+    //   setTimeout(() => navigate("/login"), 2000);
+    // } catch (err) {
+    //   console.log(err);
+    //   toast.error("Terjadi kesalahan server. Coba lagi.");
+    // } finally {
+    //   setLoading(false);
+    // }
 
     try {
-      // cek email
-      const checkEmail = await api.get("/users");
+      const data = await registerDemo(form);
 
-      const isExist = checkEmail.data.some(
-        (u) => u.email === form.email.trim()
-      );
-
-      if (isExist) {
-        toast.warning("Email sudah terdaftar");
-        return;
-      }
-
-      // register
-      const res = await api.post("/users", {
-        fullname: form.fullname,
-        email: form.email,
-        gender: form.gender,
-        phone: parsed.number,
-        password: form.password,
-        avatar: null,
-        role: "student",
+      toast.success("Pendaftaran berhasil 🎉", { autoClose: 2000 });
+      toast.info("Akun demo, data tidak disimpan di server", {
+        autoClose: 3000,
       });
 
-      toast.success("Pendaftaran berhasil! 🎉", { autoClose: 2000 });
-
-      login(res.data);
-      setTimeout(() => navigate("/"), 2000);
+      // setTimeout(() => navigate("/login"), 1500);
+      setPayload(data);
     } catch (err) {
-      toast.error(err, "Terjadi kesalahan server. Coba lagi.");
-      // console.error(err);
-
-      // console.log("STATUS:", err.response?.status);
-      // console.log("URL:", err.config?.url);
-      // console.log("PARAMS:", err.config?.params);
-      // console.log("RESPONSE:", err.response?.data);
+      if (err.message === "EMAIL_EXISTS") {
+        toast.warning("Email sudah terdaftar");
+      } else {
+        toast.error("Terjadi kesalahan");
+      }
     }
-
-    // setPayload(data);
   };
 
   return (
@@ -185,32 +195,32 @@ export default function Register() {
             {/* Full Name */}
             <div className="flex flex-col gap-1">
               <label
-                htmlFor="fullname"
+                htmlFor="fullName"
                 className="block font-dm font-normal text-sm md:text-base! leading-[1.4] tracking-[0.2px] text-text-dark-secondary"
               >
                 Nama Lengkap <span className="text-error-default">*</span>
               </label>
               <input
                 type="text"
-                name="fullname"
-                value={form.fullname}
+                name="fullName"
+                value={form.fullName}
                 onChange={handleChange}
                 placeholder="Masukkan Nama Lengkap"
                 className={`w-full font-dm font-normal text-sm md:text-base! leading-[1.4] tracking-[0.2px] border rounded-md px-3 py-2 focus:ring-2 focus:outline-none transition ${
-                  errors.fullname
+                  errors.fullName
                     ? "border-red-500 focus:ring-red-400"
                     : "border-other-border focus:ring-main-primary-400"
                 }
                 ${
-                  form.fullname === ""
+                  form.fullName === ""
                     ? "placeholder:text-text-dark-disabled text-text-dark-disabled"
                     : "text-text-dark-primary"
                 }`}
                 required
               />
               {/* Error Message */}
-              {errors.fullname && (
-                <span className="text-red-500 text-sm">{errors.fullname}</span>
+              {errors.fullName && (
+                <span className="text-red-500 text-sm">{errors.fullName}</span>
               )}
             </div>
 
@@ -434,11 +444,13 @@ export default function Register() {
             </button>
           </div>
 
-          {/* {payload && (
-              <pre className="mt-4 text-xs text-left bg-gray-100 p-2 rounded">
-                {JSON.stringify(payload, null, 2)}
-              </pre>
-            )} */}
+          {payload && (
+            <pre className="text-xs text-left bg-gray-100 p-2 rounded-[10px] overflow-x-auto">
+              Register Payload (DEMO), data tidak benar-benar disimpan diserver:
+              <br />
+              {JSON.stringify(payload, null, 2)}
+            </pre>
+          )}
         </form>
 
         {/* Divider */}

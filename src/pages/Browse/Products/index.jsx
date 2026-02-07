@@ -2,14 +2,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LoaderCircle, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { normalizeProductForView } from "../../utils/normalizeProduct/normalizeProductForView";
-import SortDropdown from "../../components/Dropdown/SortDropdown";
-import Pagination from "../../components/Pagination/Pagination";
-import SearchInput from "../../components/SearchInput";
+import { normalizeProductForView } from "../../../utils/normalizeProduct/normalizeProductForView";
+import SortDropdown from "../../../components/Dropdown/SortDropdown";
+import Pagination from "../../../components/Pagination/Pagination";
+import SearchInput from "../../../components/SearchInput";
+import { mockApi, dummyApi } from "../../../services/api";
+import CardCourse from "../../../components/CardCourse";
 import FilterSidebar from "./components/FilterSidebar";
-import CardCourse from "../../components/CardCourse";
-import { getFinalPrice } from "../../utils/price";
-import { api } from "../../services/api";
+import { getFinalPrice } from "../../../utils/price";
+
 
 export default function Products() {
   const [courses, setCourses] = useState([]);
@@ -34,12 +35,12 @@ export default function Products() {
         setLoading(true);
 
         const [productsRes, usersRes] = await Promise.all([
-          api.get("/products"),
-          api.get("/users"),
+          mockApi.get("/products"),
+          dummyApi.get("/users"),
         ]);
 
         const products = productsRes.data;
-        const users = usersRes.data;
+        const users = usersRes.data.users;
 
         // mapping instructor
         const mergedData = products.map((p) =>
@@ -53,7 +54,7 @@ export default function Products() {
 
         setCourses(sortedCourses);
 
-        // kategori bisa hardcode dulu (MockAPI limit)
+        // kategori bisa hardcode dulu (mockApi limit)
         setCategories([
           { id: 1, name: "Programming", slug: "programming" },
           { id: 2, name: "Design", slug: "design" },
@@ -80,7 +81,7 @@ export default function Products() {
 
       const matchSearch =
         (course.title || "").toLowerCase().includes(query) ||
-        (course.instructor?.name || "").toLowerCase().includes(query) ||
+        (course.instructor?.fullName || "").toLowerCase().includes(query) ||
         (course.category || "").toLowerCase().includes(query) ||
         (course.description || "").toLowerCase().includes(query);
 

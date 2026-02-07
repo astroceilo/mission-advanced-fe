@@ -1,5 +1,21 @@
+import { normalizeInstructor } from "../normalizeUser/normalizeInstructor";
+import { normalizeUser } from "../normalizeUser/normalizeUser";
+
+
 export function normalizeProductForLists(product, users = []) {
-  const instructor = users.find((u) => String(u.id) === String(product.instructorId)) ?? null;
+  const rawInstructor = users.find(
+    (u) => String(u.id) === String(product.instructorId),
+  );
+
+  const normalizedUser = normalizeUser(rawInstructor);
+
+  const instructor =
+    normalizedUser?.role === "instructor"
+      ? normalizeInstructor(rawInstructor)
+      : null;
+
+  const price = Number(product.price) || 0;
+  const discount = Number(product.discount) || 0;
 
   return {
     id: product.id,
@@ -9,21 +25,12 @@ export function normalizeProductForLists(product, users = []) {
     thumbnail: product.thumbnail,
     description: product.description,
 
-    instructor: instructor
-      ? {
-          name: instructor.fullname,
-          avatar: instructor.avatar,
-          position: instructor.position,
-          company: instructor.company,
-        }
-      : null,
+    instructor,
 
     price: {
-      original: Number(product.price) || 0,
-      discounted:
-        product.discount && Number(product.discount) > 0
-          ? Number(product.discount)
-          : null,
+      original: price,
+      discount,
+      final: discount > 0 ? price - discount : price,
     },
 
     rating: {

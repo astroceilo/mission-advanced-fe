@@ -12,35 +12,38 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { p } from "framer-motion/client";
 
-import { normalizeProductForDetails } from "../../utils/normalizeProduct/normalizeProductForDetails";
-import { truncateText } from "../../utils/truncateText";
-import RatingStars from "../../components/RatingStars";
-import CardCourse from "../../components/CardCourse";
-import { getFinalPrice } from "../../utils/price";
-import { api } from "../../services/api";
+import { normalizeProductForLists } from "../../../utils/normalizeProduct/normalizeProductForLists";
+import { truncateText } from "../../../utils/truncateText";
+import RatingStars from "../../../components/RatingStars";
+import { dummyApi, mockApi } from "../../../services/api";
+import { useAuth } from "../../../context/AuthContext";
+import { getFinalPrice } from "../../../utils/price";
 
 export default function ProductDetails() {
+  const { user } = useAuth();
+
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
+
+  const roleBasePath = `/${user.role}`;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [productRes, productsRes, usersRes] = await Promise.all([
-          api.get(`/products?slug=${slug}`),
-          api.get("/products"),
-          api.get("/users"),
+          mockApi.get(`/products?slug=${slug}`),
+          mockApi.get("/products"),
+          dummyApi.get("/users"),
         ]);
 
         const productRaw = productRes.data?.[0];
         if (!productRaw) return;
 
-        const normalized = normalizeProductForDetails(
+        const normalized = normalizeProductForLists(
           productRaw,
-          usersRes.data,
+          usersRes.data.users,
         );
         setProduct(normalized);
 
@@ -55,7 +58,7 @@ export default function ProductDetails() {
             return 0;
           })
           .slice(0, 3)
-          .map((p) => normalizeProductForDetails(p, usersRes.data));
+          .map((p) => normalizeProductForLists(p, usersRes.data.users));
 
         setRelatedProducts(related);
       } catch (err) {
@@ -79,39 +82,40 @@ export default function ProductDetails() {
 
   return (
     <>
+      {/* Breadcrumb */}
       <nav className="flex" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
           <li className="inline-flex items-center">
             <Link
-              to="/"
+              to="#"
               className="inline-flex items-center text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary"
             >
-              Beranda
+              Dashboard
             </Link>
           </li>
           <li>
             <div className="flex items-center">
               <span className="text-text-dark-disabled">/</span>
               <Link
-                to="/products"
+                to={`${roleBasePath}/product-lists`}
                 className="ms-1 text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary md:ms-2"
               >
-                Products
+                Product Lists
               </Link>
             </div>
           </li>
           <li>
             <div className="flex items-center">
               <span className="text-text-dark-disabled">/</span>
-              {/* <Link
+              <Link
                 to="#"
                 className="ms-1 text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary md:ms-2"
               >
                 {product.category}
-              </Link> */}
-              <span className="ms-1 text-sm font-medium text-text-dark-disabled md:ms-2">
+              </Link>
+              {/* <span className="ms-1 text-sm font-medium text-text-dark-disabled md:ms-2">
                 {product.category}
-              </span>
+              </span> */}
             </div>
           </li>
           <li aria-current="page">
@@ -124,6 +128,7 @@ export default function ProductDetails() {
           </li>
         </ol>
       </nav>
+      {/* End Breadcrumb */}
 
       {/* Hero Section */}
       <section className="relative w-full h-[400px] rounded-[10px] overflow-hidden mt-8">
@@ -155,6 +160,7 @@ export default function ProductDetails() {
       </section>
       {/* End Hero Section */}
 
+      {/* Content Section */}
       <section className="mx-auto max-w-7xl mt-8 flex flex-col md:flex-row gap-6 md:gap-9">
         {/* Desc + Price */}
         <div className="w-full md:w-[366px]! h-fit flex flex-col order-1 md:order-2 items-start gap-5 md:gap-6 rounded-[10px] bg-other-primarybg border border-other-border p-5 md:p-6">
@@ -184,18 +190,18 @@ export default function ProductDetails() {
                 Diskon 50%
               </span>
             </div>
-            <span className="text-info-default font-medium text-sm">
+            {/* <span className="text-info-default font-medium text-sm">
               Penawaran spesial tersisa 2 hari lagi!
-            </span>
+            </span> */}
           </div>
-          <div className="w-full flex flex-col items-start gap-3 md:gap-4">
+          {/* <div className="w-full flex flex-col items-start gap-3 md:gap-4">
             <Link
               to="#"
               className="w-full inline-block bg-main-primary hover:bg-transparent text-white text-center hover:text-main-primary border border-main-primary md:font-bold rounded-[10px] text-sm md:text-base! px-[22px] py-[7px] md:px-[26px]! md:py-2.5! transition-colors duration-300"
             >
               Beli Sekarang
             </Link>
-          </div>
+          </div> */}
           <div className="flex flex-col items-start gap-3 md:gap-4">
             <h4>Kelas Ini Sudah Termasuk</h4>
             <div className="flex gap-4">
@@ -273,11 +279,11 @@ export default function ProductDetails() {
                 <div className="flex items-start gap-2.5">
                   <Link to="#" className="block shrink-0">
                     <img
-                      alt={product.instructor.name}
+                      alt={product.instructor.fullName}
                       src={
                         product.instructor.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          product.instructor?.name || "User",
+                          product.instructor?.fullName || "User",
                         )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
@@ -286,7 +292,7 @@ export default function ProductDetails() {
 
                   <div className="flex flex-col">
                     <p className="text-sm md:text-base font-medium">
-                      <Link to="#">{product.instructor.name}</Link>
+                      <Link to="#">{product.instructor.fullName}</Link>
                     </p>
 
                     <p className="text-xs md:text-sm font-normal text-text-dark-secondary">
@@ -314,11 +320,11 @@ export default function ProductDetails() {
                 <div className="flex items-start gap-2.5">
                   <Link to="#" className="block shrink-0">
                     <img
-                      alt={product.instructor.name}
+                      alt={product.instructor.fullName}
                       src={
                         product.instructor.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          product.instructor?.name || "User",
+                          product.instructor?.fullName || "User",
                         )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
@@ -327,7 +333,7 @@ export default function ProductDetails() {
 
                   <div className="flex flex-col">
                     <p className="text-sm md:text-base font-medium">
-                      <Link to="#">{product.instructor.name}</Link>
+                      <Link to="#">{product.instructor.fullName}</Link>
                     </p>
 
                     <p className="text-xs md:text-sm font-normal text-text-dark-secondary">
@@ -411,11 +417,11 @@ export default function ProductDetails() {
                 <div className="flex items-start gap-2.5">
                   <Link to="#" className="block shrink-0">
                     <img
-                      alt={name}
+                      alt={product.instructor?.fullName}
                       src={
                         product.instructor.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          product.instructor?.name || "User",
+                          product.instructor?.fullName || "User",
                         )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
@@ -424,7 +430,7 @@ export default function ProductDetails() {
 
                   <div className="flex flex-col">
                     <p className="text-sm md:text-base font-medium">
-                      <Link to="#">{name}</Link>
+                      <Link to="#">{product.instructor?.fullName}</Link>
                     </p>
 
                     <p className="text-xs md:text-sm font-normal text-text-dark-secondary">
@@ -453,11 +459,11 @@ export default function ProductDetails() {
                 <div className="flex items-start gap-2.5">
                   <Link to="#" className="block shrink-0">
                     <img
-                      alt={name}
+                      alt={product.instructor?.fullName}
                       src={
                         product.instructor.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          product.instructor?.name || "User",
+                          product.instructor?.fullName || "User",
                         )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
@@ -466,7 +472,7 @@ export default function ProductDetails() {
 
                   <div className="flex flex-col">
                     <p className="text-sm md:text-base font-medium">
-                      <Link to="#">{name}</Link>
+                      <Link to="#">{product.instructor?.fullName}</Link>
                     </p>
 
                     <p className="text-xs md:text-sm font-normal text-text-dark-secondary">
@@ -493,44 +499,7 @@ export default function ProductDetails() {
           </div>
         </div>
       </section>
-
-      {/* Section Card */}
-      <section className="mx-auto max-w-7xl my-8">
-        <div className="max-w-full relative flex flex-col gap-4">
-          <h3 className="text-2xl! md:text-[32px]! font-semibold leading-tight">
-            Video Pembelajaran Terkait Lainnya
-          </h3>
-          <p className="text-sm md:text-base! font-medium text-text-dark-secondary leading-tight tracking-[0.2px]">
-            Ekspansi Pengetahuan Anda dengan Rekomendasi Spesial Kami!
-          </p>
-        </div>
-
-        {/* Menu Card */}
-        {relatedProducts.length > 0 ? (
-          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:gap-6">
-            <AnimatePresence>
-              {relatedProducts.map((course) => (
-                <motion.div
-                  key={course.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                >
-                  <CardCourse key={course.id} course={course} limit={3} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        ) : (
-          <p className="text-center text-text-dark-secondary text-lg font-medium animate-pulse">
-            Memuat data...
-          </p>
-        )}
-        {/* End Menu Card */}
-      </section>
-      {/* End Section Card */}
+      {/* End Content Section */}
     </>
   );
 }

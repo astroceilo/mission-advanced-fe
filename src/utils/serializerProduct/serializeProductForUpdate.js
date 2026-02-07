@@ -1,4 +1,7 @@
-export function normalizeProductForUpdate(form) {
+export function serializeProductForUpdate(form) {
+  const price = Number(form.price) || 0;
+  const discount = Number(form.discount) || 0;
+
   return {
     title: form.title,
     slug: form.slug,
@@ -6,8 +9,8 @@ export function normalizeProductForUpdate(form) {
     thumbnail: form.thumbnail,
     description: form.description,
 
-    price: Number(form.price),
-    discount: Number(form.discount) || 0,
+    price,
+    discount,
 
     instructorId: form.instructorId,
     updatedAt: new Date().toISOString(),

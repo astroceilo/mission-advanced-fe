@@ -2,11 +2,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { normalizeProductForView } from "../../utils/normalizeProduct/normalizeProductForView";
-import hero from "../../assets/images/hero_section.jpg";
-import news from "../../assets/images/news-letter.jpg";
-import CardCourse from "../../components/CardCourse";
-import { api } from "../../services/api";
+import { normalizeProductForView } from "../../../utils/normalizeProduct/normalizeProductForView";
+import hero from "../../../assets/images/hero_section.jpg";
+import news from "../../../assets/images/news-letter.jpg";
+import { dummyApi, mockApi } from "../../../services/api";
+import CardCourse from "../../../components/CardCourse";
+
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("semua-kelas");
@@ -18,27 +19,27 @@ export default function Home() {
     const fetchData = async () => {
       try {
         const [productsRes, usersRes] = await Promise.all([
-          api.get("/products"),
-          api.get("/users"),
+          mockApi.get("/products"),
+          dummyApi.get("/users"),
         ]);
 
         const products = productsRes.data;
-        const users = usersRes.data;
+        const users = usersRes.data.users;
 
         // mapping instructor
         const mappedCourses = products.map((p) =>
-          normalizeProductForView(p, users)
+          normalizeProductForView(p, users),
         );
 
         // ambil 9 produk terbaru
         const sortedCourses = mappedCourses.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
         );
         const latestCourses = sortedCourses.slice(0, 9);
 
         setCourses(latestCourses);
 
-        // kategori bisa hardcode dulu (MockAPI limit)
+        // kategori bisa hardcode dulu (mockApi limit)
         setCategories([
           { id: 1, name: "Programming", slug: "programming" },
           { id: 2, name: "Design", slug: "design" },
@@ -58,7 +59,7 @@ export default function Home() {
     activeCategory === "semua-kelas"
       ? courses
       : courses.filter(
-          (course) => course.category.toLowerCase() === activeCategory
+          (course) => course.category.toLowerCase() === activeCategory,
         );
 
   return (
@@ -128,8 +129,8 @@ export default function Home() {
                         transformOrigin: isFirst
                           ? "left center"
                           : isLast
-                          ? "right center"
-                          : "center center",
+                            ? "right center"
+                            : "center center",
                       }}
                       className={`relative pb-2 whitespace-nowrap font-dm font-medium text-sm md:text-base! cursor-pointer
                         ${

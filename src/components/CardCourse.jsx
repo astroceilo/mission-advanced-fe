@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getFinalPrice } from "../utils/price";
 import RatingStars from "./RatingStars";
 
+
 export default function CardCourse({ course }) {
   if (!course) return null;
 
@@ -17,7 +18,12 @@ export default function CardCourse({ course }) {
     rating = {},
   } = course;
 
-  const { name, avatar, position, company } = instructor ?? {};
+  const {
+    fullName = "Instructor",
+    avatar = "https://via.placeholder.com/48?text=?",
+    company,
+    position,
+  } = instructor ?? {};
   const { stars = 0, reviews = 0 } = rating ?? {};
 
   // hasil harga dari utils
@@ -43,7 +49,7 @@ export default function CardCourse({ course }) {
               <Link
                 to={
                   slug
-                    ? `/products/${slug.toLowerCase().replace(/\s+/g, "-")}`
+                    ? `/products/detail/${slug.toLowerCase().replace(/\s+/g, "-")}`
                     : "#"
                 }
               >
@@ -61,15 +67,15 @@ export default function CardCourse({ course }) {
             <div className="flex items-start gap-2.5">
               <Link to="#" className="block shrink-0">
                 <img
-                  alt={name}
-                  src={avatar || "https://via.placeholder.com/48?text=?"}
+                  alt={fullName}
+                  src={avatar}
                   className="w-10 h-10 rounded-[10px] object-cover"
                 />
               </Link>
 
               <div className="flex flex-col">
                 <p className="font-dm font-medium text-sm md:text-base! leading-[1.4] tracking-[0.2px] text-text-dark-primary">
-                  <Link to="#">{name}</Link>
+                  <Link to="#">{fullName}</Link>
                 </p>
 
                 <p className="font-dm font-normal text-xs md:text-sm! leading-[1.4] tracking-[0.2px] text-text-dark-secondary">

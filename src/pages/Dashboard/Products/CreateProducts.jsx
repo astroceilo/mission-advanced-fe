@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 import { validateCreateProductForm } from "../../../utils/validationsProduct/validateCreateProductForm";
-import { normalizeProductForCreate } from "../../../utils/normalizeProduct/normalizeProductForCreate";
+import { serializeProductForCreate } from "../../../utils/serializerProduct/serializeProductForCreate";
 import { validateImageFile } from "../../../utils/validators/validateImageFile";
 import CategoryDropdown from "../../../components/Dropdown/CategoryDropdown";
 import { handleSlugChange } from "../../../utils/slug/handleSlugChange";
 import { getFinalPrice, formatPriceFull } from "../../../utils/price";
 import { useAuth } from "../../../context/AuthContext";
 import { slugify } from "../../../utils/slugify";
-import { api } from "../../../services/api";
+import { mockApi } from "../../../services/api";
 
 export default function CreateProducts() {
   // useNavigate and useAuth state
@@ -50,6 +50,8 @@ export default function CreateProducts() {
     final: 0,
     formatted: { original: "0", discount: "0", final: "0" },
   });
+
+  const roleBasePath = `/${user.role}`;
 
   // initialize instructorId when user is logged in
   useEffect(() => {
@@ -168,7 +170,7 @@ export default function CreateProducts() {
     setLoading(true);
 
     try {
-      const payload = normalizeProductForCreate({
+      const payload = serializeProductForCreate({
         ...form,
         // thumbnail: "[FILE]", //dummy placeholder
         thumbnail: "",
@@ -181,7 +183,7 @@ export default function CreateProducts() {
       console.log("PAYLOAD NORMALIZED:", payload);
       console.groupEnd();
 
-      await api.post("/products", {
+      await mockApi.post("/products", {
         ...payload,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -193,7 +195,7 @@ export default function CreateProducts() {
       );
 
       setTimeout(() => {
-        navigate("/list-products");
+        navigate(`${roleBasePath}/product-lists`);
       }, 2000);
     } catch (err) {
       console.error("Product creation failed:", err);
@@ -209,24 +211,21 @@ export default function CreateProducts() {
       <nav className="flex" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
           <li className="inline-flex items-center">
-            {/* <Link
-              to="/dashboard"
+            <Link
+              to="#"
               className="inline-flex items-center text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary"
             >
               Dashboard
-            </Link> */}
-            <span className="inline-flex items-center text-sm font-medium text-text-dark-disabled">
-              Dashboard
-            </span>
+            </Link>
           </li>
           <li>
             <div className="flex items-center">
               <span className="text-text-dark-disabled">/</span>
               <Link
-                to="/list-products"
+                to={`${roleBasePath}/product-lists`}
                 className="ms-1 text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary md:ms-2"
               >
-                List Products
+                Product Lists
               </Link>
             </div>
           </li>
@@ -234,19 +233,20 @@ export default function CreateProducts() {
             <div className="flex items-center">
               <span className="text-text-dark-disabled">/</span>
               <span className="ms-1 text-sm font-medium text-text-dark-primary md:ms-2">
-                Create Products
+                Create New Products
               </span>
             </div>
           </li>
         </ol>
       </nav>
+      {/* End Breadcrumb */}
 
       {/* Section Create Products */}
       <section className="relative w-full flex flex-col gap-6 md:gap-8!">
         {/* Title */}
         <div className="w-fit flex flex-col gap-2.5">
           <h3 className="font-pop font-semibold text-2xl md:text-[32px]! leading-[1.1] tracking-[0] text-text-dark-primary">
-            Buat Product Baru
+            Create New Product
           </h3>
         </div>
         {/* End Title */}
@@ -539,7 +539,7 @@ export default function CreateProducts() {
           </form>
         </div>
       </section>
-      {/* End Section Card */}
+      {/* End Section Create Products */}
     </>
   );
 }

@@ -1,130 +1,140 @@
+/* eslint-disable react-hooks/refs */
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, NavLink } from "react-router-dom";
 import { LogOut, Menu, X } from "lucide-react";
-import { useRef, useState } from "react";
 
-import {
-  generalMenuItems,
-  adminMenuItems,
-  profileMenuItems,
-} from "../HeaderMenuItems";
-import useClickOutsideMulti from "../../../hooks/useClickOutsideMulti";
+import { publicMenu, roleMenu } from "../HeaderMenuItems";
+import { useAuth } from "../../../context/AuthContext";
+import HeaderMenuDropdown from "./HeaderMenuDropdown";
+import useDropdown from "../../../hooks/useDropdown";
 import HeaderProfile from "./HeaderProfile";
 
 export default function HeaderHomeLogin({ handleLogout }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const allMenuItems = [...generalMenuItems, ...profileMenuItems];
+  const { user } = useAuth();
 
-  const toggleMenu = () => setMenuOpen((prev) => !prev);
+  const role = user?.role;
+  const roleMenus = roleMenu[role] || [];
 
-  const menuRef = useRef(null);
-  const profileRef = useRef(null);
+  const mobileMenus = [
+    ...publicMenu,
+    ...roleMenus.flatMap((m) => m.children || []),
+  ];
 
-  useClickOutsideMulti([menuRef], () => setMenuOpen(false));
-  useClickOutsideMulti([profileRef], () => setProfileOpen(false));
+  const mobile = useDropdown();
 
   return (
     <>
+      {/* Desktop */}
       <div className="hidden md:flex items-center gap-4">
         {/* Navigation links */}
         <nav className="flex items-center gap-9">
           <ul className="flex flex-col p-4 md:p-0 mt-4 border border-other-border rounded-[10px] bg-other-basebg md:space-x-8 md:flex-row md:mt-0 md:border-0 md:bg-white">
-            {generalMenuItems.map((item) => (
-              <li key={item.name}>
-                <NavLink
-                  to={item.href}
-                  className="block py-2 px-3 text-text-dark-secondary hover:text-text-dark-primary text-other-body-medium-h3 transition-colors duration-300 ease-in-out"
-                >
-                  {item.name}
-                </NavLink>
-              </li>
+            {/* Public Menu */}
+            {publicMenu.map((menu) => (
+              <NavLink
+                key={menu.label}
+                to={menu.href}
+                className="block py-2 px-3 text-text-dark-secondary hover:text-text-dark-primary text-other-body-medium-h3 transition-colors duration-300 ease-in-out"
+              >
+                {menu.label}
+              </NavLink>
             ))}
-            <div ref={menuRef} className="relative">
-              {/* Dropdown menu toggle */}
-              <li>
-                <NavLink
-                  onClick={toggleMenu}
-                  className="block py-2 px-3 text-text-dark-secondary hover:text-text-dark-primary text-other-body-medium-h3 transition-colors duration-300 ease-in-out"
+            {/* End Public Menu */}
+
+            {/* Role Menu Dropdown */}
+            {roleMenus.map((menu) => {
+              const dropdown = useDropdown();
+
+              return (
+                <div
+                  key={menu.label}
+                  ref={dropdown.ref}
+                  className="relative"
+                  onMouseEnter={dropdown.openDropdown}
+                  onMouseLeave={dropdown.close}
                 >
-                  Admin Products
-                </NavLink>
-              </li>
-              {/* Dropdown Nav */}
-              <AnimatePresence>
-                {menuOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25, ease: "easeInOut" }}
-                    className="absolute right-0 z-10 mt-1 w-[200px] origin-top-right"
-                  >
-                    <nav
-                      className="rounded-[10px] border border-other-border bg-white overflow-hidden"
-                      style={{
-                        boxShadow:
-                          "rgba(62, 67, 74, 0.31) 0px 0px 1px 0px, rgba(62, 67, 74, 0.15) 0px 18px 28px 0px",
-                      }}
-                    >
-                      {/* Dropdown menu items */}
-                      {adminMenuItems.map((item, idx) => (
-                        <motion.div
-                          key={idx}
-                          whileHover={{
-                            backgroundColor: "rgba(247,248,249,1)",
-                            scale: 1.02,
-                          }}
-                          transition={{ duration: 0.15 }}
+                  {/* Toggle Menu Dropdown  */}
+                  <button className="block py-2 px-3 text-text-dark-secondary hover:text-text-dark-primary text-other-body-medium-h3 transition-colors duration-300 ease-in-out">
+                    {menu.label}
+                  </button>
+
+                  {/* Menu Dropdown  */}
+                  <HeaderMenuDropdown open={dropdown.open} width="220px">
+                    {menu.children.map((item) => (
+                      <motion.div
+                        key={item.label}
+                        whileHover={{
+                          backgroundColor: "rgba(247,248,249,1)",
+                          scale: 1.02,
+                        }}
+                        transition={{ duration: 0.15 }}
+                      >
+                        <Link
+                          key={item.label}
+                          to={item.href}
+                          className="block w-full font-dm font-medium text-base leading-[1.4] tracking-[0.2px] border-b border-other-border px-4 py-3 text-text-dark-secondary hover:text-text-dark-primary transition-colors duration-300 ease-in-out"
+                          onClick={dropdown.close}
                         >
-                          <Link
-                            key={item.name}
-                            to={item.href}
-                            className="block w-full font-dm font-medium text-base leading-[1.4] tracking-[0.2px] border-b border-other-border px-4 py-3 text-text-dark-secondary hover:text-text-dark-primary"
-                          >
-                            {item.name}
-                          </Link>
-                        </motion.div>
-                      ))}
-                    </nav>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                          {item.label}
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </HeaderMenuDropdown>
+                </div>
+              );
+            })}
+            {/* End Role Menu Dropdown */}
           </ul>
           <HeaderProfile handleLogout={handleLogout} />
         </nav>
+        {/* End Navigation links */}
       </div>
+      {/* End Desktop */}
 
-      <div ref={profileRef} className="relative md:hidden">
+      {/* Mobile */}
+      <div ref={mobile.ref} className="md:hidden">
         {/* Mobile menu toggle button */}
         <button
           className="overflow-hidden p-2 rounded focus:outline-none"
-          onClick={toggleMenu}
+          onClick={mobile.toggle}
         >
           <span className="sr-only">Open main menu</span>
-          {profileOpen ? <X size={24} /> : <Menu size={24} />}
+          {mobile.open ? <X size={24} /> : <Menu size={24} />}
         </button>
 
         {/* Mobile Nav */}
         <AnimatePresence>
-          {profileOpen && (
+          {mobile.open && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.25, ease: "easeInOut" }}
-              className="absolute md:hidden w-full left-0 right-0 bg-white shadow-lg z-20 overflow-hidden"
+              className="absolute w-full top-20 left-0 right-0 bg-white shadow-lg z-20 overflow-hidden"
+              style={{
+                boxShadow:
+                  "rgba(62, 67, 74, 0.31) 0px 0px 1px 0px, rgba(62, 67, 74, 0.15) 0px 18px 28px 0px",
+              }}
             >
               <nav className="flex flex-col">
-                {allMenuItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className="block w-full px-4 py-3 border border-other-border text-other-body-medium-h3 text-text-dark-secondary hover:text-text-dark-primary transition-colors duration-300 ease-in-out"
+                {mobileMenus.map((item) => (
+                  <motion.div
+                    key={item.label}
+                    whileHover={{
+                      backgroundColor: "rgba(247,248,249,1)",
+                      scale: 1.02,
+                    }}
+                    transition={{ duration: 0.15 }}
                   >
-                    {item.name}
-                  </Link>
+                    <Link
+                      key={item.label}
+                      to={item.href}
+                      className="block w-full font-dm font-medium text-base leading-[1.4] tracking-[0.2px] border-b border-other-border px-4 py-3 text-text-dark-secondary hover:text-text-dark-primary transition-colors duration-300 ease-in-out"
+                      onClick={mobile.close}
+                    >
+                      {item.label}
+                    </Link>
+                  </motion.div>
                 ))}
 
                 <motion.button
@@ -134,7 +144,7 @@ export default function HeaderHomeLogin({ handleLogout }) {
                     scale: 1.02,
                   }}
                   transition={{ duration: 0.15 }}
-                  className="flex w-full items-center gap-[5px] px-4 py-3 font-medium text-base text-main-tertiary-400 cursor-pointer"
+                  className="flex w-full font-dm font-medium text-base leading-[1.4] tracking-[0.2px] items-center gap-[5px] px-4 py-3 text-main-tertiary-400 cursor-pointer"
                   role="menuitem"
                   onClick={handleLogout}
                 >
@@ -146,6 +156,7 @@ export default function HeaderHomeLogin({ handleLogout }) {
           )}
         </AnimatePresence>
       </div>
+      {/* End Mobile */}
     </>
   );
 }

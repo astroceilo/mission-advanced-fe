@@ -12,16 +12,15 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { p } from "framer-motion/client";
 
-import { normalizeProductForLists } from "../../../utils/normalizeProduct/normalizeProductForLists";
+import { normalizeProductForDetails } from "../../../utils/normalizeProduct/normalizeProductForDetails";
 import { truncateText } from "../../../utils/truncateText";
 import RatingStars from "../../../components/RatingStars";
+import { dummyApi, mockApi } from "../../../services/api";
 import CardCourse from "../../../components/CardCourse";
 import { getFinalPrice } from "../../../utils/price";
-import { api } from "../../../services/api";
 
-export default function DetailProducts() {
+export default function ProductDetails() {
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -30,15 +29,18 @@ export default function DetailProducts() {
     const fetchData = async () => {
       try {
         const [productRes, productsRes, usersRes] = await Promise.all([
-          api.get(`/products?slug=${slug}`),
-          api.get("/products"),
-          api.get("/users"),
+          mockApi.get(`/products?slug=${slug}`),
+          mockApi.get("/products"),
+          dummyApi.get("/users"),
         ]);
 
         const productRaw = productRes.data?.[0];
         if (!productRaw) return;
 
-        const normalized = normalizeProductForLists(productRaw, usersRes.data);
+        const normalized = normalizeProductForDetails(
+          productRaw,
+          usersRes.data.users,
+        );
         setProduct(normalized);
 
         // cari related products
@@ -52,7 +54,7 @@ export default function DetailProducts() {
             return 0;
           })
           .slice(0, 3)
-          .map((p) => normalizeProductForLists(p, usersRes.data));
+          .map((p) => normalizeProductForDetails(p, usersRes.data.users));
 
         setRelatedProducts(related);
       } catch (err) {
@@ -79,24 +81,21 @@ export default function DetailProducts() {
       <nav className="flex" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
           <li className="inline-flex items-center">
-            {/* <Link
-              to="/dashboard"
+            <Link
+              to="/"
               className="inline-flex items-center text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary"
             >
-              Dashboard
-            </Link> */}
-            <span className="inline-flex items-center text-sm font-medium text-text-dark-disabled">
-              Dashboard
-            </span>
+              Beranda
+            </Link>
           </li>
           <li>
             <div className="flex items-center">
               <span className="text-text-dark-disabled">/</span>
               <Link
-                to="/list-products"
+                to="/products"
                 className="ms-1 text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary md:ms-2"
               >
-                List Products
+                Products
               </Link>
             </div>
           </li>
@@ -273,11 +272,11 @@ export default function DetailProducts() {
                 <div className="flex items-start gap-2.5">
                   <Link to="#" className="block shrink-0">
                     <img
-                      alt={product.instructor.name}
+                      alt={product.instructor.fullName}
                       src={
                         product.instructor.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          product.instructor?.name || "User",
+                          product.instructor?.fullName || "User",
                         )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
@@ -286,7 +285,7 @@ export default function DetailProducts() {
 
                   <div className="flex flex-col">
                     <p className="text-sm md:text-base font-medium">
-                      <Link to="#">{product.instructor.name}</Link>
+                      <Link to="#">{product.instructor.fullName}</Link>
                     </p>
 
                     <p className="text-xs md:text-sm font-normal text-text-dark-secondary">
@@ -314,11 +313,11 @@ export default function DetailProducts() {
                 <div className="flex items-start gap-2.5">
                   <Link to="#" className="block shrink-0">
                     <img
-                      alt={product.instructor.name}
+                      alt={product.instructor.fullName}
                       src={
                         product.instructor.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          product.instructor?.name || "User",
+                          product.instructor?.fullName || "User",
                         )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
@@ -327,7 +326,7 @@ export default function DetailProducts() {
 
                   <div className="flex flex-col">
                     <p className="text-sm md:text-base font-medium">
-                      <Link to="#">{product.instructor.name}</Link>
+                      <Link to="#">{product.instructor.fullName}</Link>
                     </p>
 
                     <p className="text-xs md:text-sm font-normal text-text-dark-secondary">
@@ -411,11 +410,11 @@ export default function DetailProducts() {
                 <div className="flex items-start gap-2.5">
                   <Link to="#" className="block shrink-0">
                     <img
-                      alt={name}
+                      alt={product.instructor.fullName}
                       src={
                         product.instructor.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          product.instructor?.name || "User",
+                          product.instructor?.fullName || "User",
                         )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
@@ -424,7 +423,7 @@ export default function DetailProducts() {
 
                   <div className="flex flex-col">
                     <p className="text-sm md:text-base font-medium">
-                      <Link to="#">{name}</Link>
+                      <Link to="#">{product.instructor.fullName}</Link>
                     </p>
 
                     <p className="text-xs md:text-sm font-normal text-text-dark-secondary">
@@ -453,11 +452,11 @@ export default function DetailProducts() {
                 <div className="flex items-start gap-2.5">
                   <Link to="#" className="block shrink-0">
                     <img
-                      alt={name}
+                      alt={product.instructor?.fullName}
                       src={
                         product.instructor.avatar ||
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          product.instructor?.name || "User",
+                          product.instructor?.fullName || "User",
                         )}`
                       }
                       className="w-10 h-10 rounded-[10px] object-cover"
@@ -466,7 +465,7 @@ export default function DetailProducts() {
 
                   <div className="flex flex-col">
                     <p className="text-sm md:text-base font-medium">
-                      <Link to="#">{name}</Link>
+                      <Link to="#">{product.instructor?.fullName}</Link>
                     </p>
 
                     <p className="text-xs md:text-sm font-normal text-text-dark-secondary">

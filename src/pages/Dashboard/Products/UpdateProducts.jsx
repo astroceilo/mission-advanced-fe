@@ -4,14 +4,15 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 import { validateUpdateProductForm } from "../../../utils/validationsProduct/validateUpdateProductForm";
-import { normalizeProductForUpdate } from "../../../utils/normalizeProduct/normalizeProductForUpdate";
+import { serializeProductForUpdate } from "../../../utils/serializerProduct/serializeProductForUpdate";
+import { prepareProductForm } from "../../../utils/prepareProduct/prepareProductForm";
 import { validateImageFile } from "../../../utils/validators/validateImageFile";
 import CategoryDropdown from "../../../components/Dropdown/CategoryDropdown";
 import { handleSlugChange } from "../../../utils/slug/handleSlugChange";
 import { getFinalPrice, formatPriceFull } from "../../../utils/price";
 import { useAuth } from "../../../context/AuthContext";
 import { slugify } from "../../../utils/slugify";
-import { api } from "../../../services/api";
+import { mockApi } from "../../../services/api";
 
 export default function UpdateProducts() {
   // useNavigate and useAuth state
@@ -43,33 +44,48 @@ export default function UpdateProducts() {
   // get id & slug from params
   const { id, slug } = useParams();
 
+  const roleBasePath = user?.role === "admin" ? "/admin" : "/instructor";
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await api.get(`/products/${id}`);
+        const res = await mockApi.get(`/products/${id}`);
         const data = res.data;
 
-        setForm({
-          title: data.title,
-          slug: data.slug,
-          category: data.category,
-          thumbnail: null,
-          description: data.description,
-          price: String(data.price),
-          discount: String(data.discount ?? ""),
-          instructorId: String(data.instructorId),
-        });
+        // setForm({
+        //   title: data.title,
+        //   slug: data.slug,
+        //   category: data.category,
+        //   thumbnail: null,
+        //   description: data.description,
+        //   price: String(data.price),
+        //   discount: String(data.discount ?? ""),
+        //   instructorId: String(data.instructorId),
+        // });
 
+        setForm(prepareProductForm(data));
         setExistingThumbnail(data.thumbnail ?? null); // simpan existing thumbnail
       } catch (err) {
         console.error("Error fetching product:", err);
         toast.error("Product nggak ketemu 😵");
-        navigate("/list-products");
+        navigate(`${roleBasePath}/product-lists`);
       }
     };
 
     if (id) fetchProduct();
   }, [id]);
+
+  // check if user is admin or owner
+  useEffect(() => {
+    if (!user || !form.instructorId) return;
+
+    const isOwner = String(form.instructorId) === String(user.id);
+
+    if (user.role !== "admin" && !isOwner) {
+      toast.error("Lu nggak punya akses ke produk ini ❌");
+      navigate(`${roleBasePath}/product-lists`);
+    }
+  }, [form.instructorId, user]);
 
   useEffect(() => {
     if (!id || !form.slug) return;
@@ -209,7 +225,7 @@ export default function UpdateProducts() {
     setLoading(true);
 
     try {
-      const payload = normalizeProductForUpdate(form);
+      const payload = serializeProductForUpdate(form);
 
       if (!form.thumbnail) {
         delete payload.thumbnail;
@@ -220,7 +236,7 @@ export default function UpdateProducts() {
       console.log("PAYLOAD NORMALIZED:", payload);
       console.groupEnd();
 
-      await api.put(`/products/${id}`, payload);
+      await mockApi.put(`/products/${id}`, payload);
 
       toast.success(
         "Produk berhasil diperbarui 🚀, cek Console atau lihat Products (kecuali Thumbnail)",
@@ -228,7 +244,7 @@ export default function UpdateProducts() {
       );
 
       setTimeout(() => {
-        navigate("/list-products");
+        navigate(`${roleBasePath}/product-lists`);
       }, 2000);
     } catch (err) {
       console.error("Update product failed:", err);
@@ -244,51 +260,49 @@ export default function UpdateProducts() {
       <nav className="flex" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
           <li className="inline-flex items-center">
-            {/* <Link
-              to="/dashboard"
+            <Link
+              to="#"
               className="inline-flex items-center text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary"
             >
               Dashboard
-            </Link> */}
-            <span className="inline-flex items-center text-sm font-medium text-text-dark-disabled">
-              Dashboard
-            </span>
+            </Link>
           </li>
           <li>
             <div className="flex items-center">
               <span className="text-text-dark-disabled">/</span>
               <Link
-                to="/list-products"
+                to={`${roleBasePath}/product-lists`}
                 className="ms-1 text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary md:ms-2"
               >
-                List Products
+                Product Lists
               </Link>
             </div>
           </li>
           <li>
             <div className="flex items-center">
               <span className="text-text-dark-disabled">/</span>
-              {/* <Link
+              <Link
                 to="#"
                 className="ms-1 text-sm font-medium text-text-dark-disabled hover:text-text-dark-primary md:ms-2"
               >
-                {product.category}
-              </Link> */}
-              <span className="ms-1 text-sm font-medium text-text-dark-disabled md:ms-2">
                 {form.category}
-              </span>
+              </Link>
+              {/* <span className="ms-1 text-sm font-medium text-text-dark-disabled md:ms-2">
+                {form.category}
+              </span> */}
             </div>
           </li>
           <li aria-current="page">
             <div className="flex items-center">
               <span className="text-text-dark-disabled">/</span>
               <span className="ms-1 text-sm font-medium text-text-dark-primary md:ms-2">
-                {form.title}
+                Update Product {form.title}
               </span>
             </div>
           </li>
         </ol>
       </nav>
+      {/* End Breadcrumb */}
 
       {/* Section Update Products */}
       <section className="relative w-full flex flex-col gap-6 md:gap-8!">
@@ -589,7 +603,7 @@ export default function UpdateProducts() {
           </form>
         </div>
       </section>
-      {/* End Section Card */}
+      {/* End Section Update Products */}
     </>
   );
 }

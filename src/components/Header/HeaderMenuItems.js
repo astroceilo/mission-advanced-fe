@@ -1,14 +1,58 @@
-export const generalMenuItems = [
-    { name: "Kategori", href: "/products" },
-];
+export const authActions = {
+  login: {
+    label: "Login",
+    href: "/login",
+  },
+  register: {
+    label: "Register",
+    href: "/register",
+  },
+};
 
-export const adminMenuItems = [
-    { name: "Product Lists", href: "/list-products" },
-    { name: "New Products", href: "/list-products/create-products" },
-];
+export const publicMenu = [{ label: "Kategori", href: "/products" }];
 
-export const profileMenuItems = [
-    { name: "Profile Saya", href: "/my-profile" },
-    { name: "Kelas Saya", href: "/my-class" },
-    { name: "Pesanan Saya", href: "/my-orders" },
-];
+export const roleMenu = {
+  instructor: [
+    {
+      label: "Menu Instruktur",
+      children: [
+        { label: "Produk Kursus Saya", href: "/instructor/product-lists" },
+        { label: "Produk Kursus Baru", href: "/instructor/products/create" },
+        // { label: "Kurikulum", href: "/instructor/curriculum" },
+        // { label: "Quiz & Tugas", href: "/instructor/assignments" },
+      ],
+    },
+  ],
+
+  admin: [
+    {
+      label: "Menu Admin",
+      children: [
+        { label: "Pengguna", href: "/admin/users" },
+        { label: "Semua Produk Kursus", href: "/admin/product-lists" },
+        { label: "Produk Kursus Baru", href: "/admin/products/create" },
+      ],
+    },
+  ],
+};
+
+export const accountMenu = {
+  student: [
+    { label: "Profile Saya", href: "/my-profile" },
+    { label: "Kelas Saya", href: "/my-class" },
+    { label: "Pesanan Saya", href: "/my-orders" },
+    { label: "Keluar", action: "logout" },
+  ],
+
+  instructor: [
+    { label: "Profile Saya", href: "/my-profile" },
+    { label: "Pengaturan", href: "/settings" },
+    { label: "Keluar", action: "logout" },
+  ],
+
+  admin: [
+    { label: "Profile Saya", href: "/my-profile" },
+    { label: "Pengaturan", href: "/settings" },
+    { label: "Keluar", action: "logout" },
+  ],
+};

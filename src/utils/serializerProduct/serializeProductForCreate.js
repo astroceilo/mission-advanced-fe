@@ -1,4 +1,7 @@
-export function normalizeProductForCreate(form) {
+export function serializeProductForCreate(form) {
+  const price = Number(form.price) || 0;
+  const discount = Number(form.discount) || 0;
+
   return {
     title: form.title,
     slug: form.slug,
@@ -6,8 +9,8 @@ export function normalizeProductForCreate(form) {
     thumbnail: form.thumbnail,
     description: form.description,
 
-    price: Number(form.price),
-    discount: Number(form.discount) || 0,
+    price: price,
+    discount: discount,
 
     instructorId: form.instructorId,
     createdAt: new Date().toISOString(),

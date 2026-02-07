@@ -6,11 +6,11 @@ import { toast } from "react-toastify";
 
 import { validateLoginForm } from "../../utils/validations/validateLoginForm";
 import { useAuth } from "../../context/AuthContext";
-import { api } from "../../services/api";
+
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isLoggedIn } = useAuth();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -22,12 +22,11 @@ export default function Login() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  // const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const loggedInUser = localStorage.getItem("loggedInUser");
-    if (loggedInUser) navigate("/");
-  }, [navigate]);
+    if (isLoggedIn) setTimeout(() => navigate("/"), 1200);
+  }, [isLoggedIn, navigate]);
 
   // handle umum untuk input biasa
   const handleChange = (e) => {
@@ -43,35 +42,26 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const res = await api.get("/users");
-      const users = res.data;
-      if (!users.length) {
-        toast.error("Belum ada user terdaftar di sistem");
-        return;
-      }
+      setLoading(true);
 
-      const foundUser = users.find(
-        (u) => u.email.toLowerCase() === form.email.toLowerCase()
-      );
-
-      if (!foundUser) {
-        toast.warning("Email belum terdaftar");
-        return;
-      }
-
-      if (foundUser.password !== form.password) {
-        toast.error("Password salah");
-        return;
-      }
+      await login(form);
 
       toast.success("Login berhasil 🎉", {
         autoClose: 2000,
       });
-      login(foundUser);
-      setTimeout(() => navigate("/"), 1200);
     } catch (err) {
-      toast.error("Gagal konek ke server");
-      console.error(err);
+      // toast.error("Gagal konek ke server atau kredensial salah", err);
+      if (err.message === "EMAIL_NOT_FOUND") {
+        toast.warning("Email belum terdaftar");
+      } else if (err.message === "INVALID_PASSWORD") {
+        toast.error("Password salah");
+      } else if (err.message === "LOGIN_FAILED") {
+        toast.error("Gagal login, server bermasalah");
+      } else {
+        toast.error("Terjadi kesalahan, coba lagi");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 

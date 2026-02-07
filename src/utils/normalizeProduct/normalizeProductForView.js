@@ -1,6 +1,18 @@
+import { normalizeInstructor } from "../normalizeUser/normalizeInstructor";
+import { normalizeUser } from "../normalizeUser/normalizeUser";
+
+
 export function normalizeProductForView(product, users = []) {
+  const rawInstructor = users.find(
+    (u) => String(u.id) === String(product.instructorId),
+  );
+
+  const normalizedUser = normalizeUser(rawInstructor);
+
   const instructor =
-    users.find((u) => String(u.id) === String(product.instructorId)) ?? null;
+    normalizedUser?.role === "instructor"
+      ? normalizeInstructor(rawInstructor)
+      : null;
 
   const price = Number(product.price) || 0;
   const discount = Number(product.discount) || 0;
@@ -14,19 +26,11 @@ export function normalizeProductForView(product, users = []) {
     description: product.description,
     createdAt: product.createdAt,
 
-    instructor: instructor
-      ? {
-          id: instructor.id,
-          name: instructor.fullname,
-          avatar: instructor.avatar ?? null,
-          position: instructor.position,
-          company: instructor.company,
-        }
-      : null,
+    instructor,
 
     price: {
       original: price,
-      discount: discount,
+      discount,
       final: discount > 0 ? price - discount : price,
     },
 
