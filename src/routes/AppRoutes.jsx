@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 
 import DashboardLayout from "../layouts/DashboardLayout";
 import LoadingScreen from "../components/LoadingScreen";
+import CheckoutLayout from "../layouts/CheckoutLayout";
 import Forbidden from "../pages/Errors/Forbidden";
 import ErrorLayout from "../layouts/ErrorLayout";
 import NotFound from "../pages/Errors/NotFound";
@@ -19,7 +20,7 @@ const BrowseProductDetails = lazy(
 );
 
 // Product Management (Protected) pages
-const ListProducts = lazy(() => import("../pages/Dashboard/Products"));
+const ProductLists = lazy(() => import("../pages/Dashboard/Products"));
 const ProductDetails = lazy(
   () => import("../pages/Dashboard/Products/ProductDetails"),
 );
@@ -29,6 +30,19 @@ const NewProducts = lazy(
 const UpdateProducts = lazy(
   () => import("../pages/Dashboard/Products/UpdateProducts"),
 );
+
+// Checkout (Protected) pages
+const CheckoutIndex = lazy(() => import("../pages/Browse/Checkout"));
+const CheckoutMethod = lazy(
+  () => import("../pages/Browse/Checkout/CheckoutMethod"),
+);
+const CheckoutPayment = lazy(
+  () => import("../pages/Browse/Checkout/CheckoutPayment"),
+);
+
+// Order (Protected) pages
+const Orders = lazy(() => import("../pages/Browse/Orders"));
+const OrderDetails = lazy(() => import("../pages/Browse/Orders/OrderDetails"));
 
 // Auth pages
 const Login = lazy(() => import("../pages/Auth/Login"));
@@ -61,7 +75,7 @@ export default function AppRoutes() {
           <Route element={<DashboardLayout bgClass="bg-[rgba(255,253,243)]" />}>
             <Route
               path="/instructor/product-lists"
-              element={<ListProducts />}
+              element={<ProductLists />}
             />
             <Route
               path="/instructor/products/detail/:slug"
@@ -81,7 +95,7 @@ export default function AppRoutes() {
         {/* Admin routes */}
         <Route element={<ProtectedRoute allow={["admin"]} />}>
           <Route element={<DashboardLayout />}>
-            <Route path="/admin/product-lists" element={<ListProducts />} />
+            <Route path="/admin/product-lists" element={<ProductLists />} />
             <Route
               path="/admin/products/detail/:slug"
               element={<ProductDetails />}
@@ -92,6 +106,25 @@ export default function AppRoutes() {
               element={<UpdateProducts />}
             />
             {/* <Route path="/admin/users" element={<Users />} /> */}
+          </Route>
+        </Route>
+
+        {/* User routes */}
+        <Route element={<ProtectedRoute allow={["student", "user"]} />}>
+          <Route element={<MainLayout bgClass="bg-[rgba(255,253,243)]" />}>
+            {/* <Route path="/user/profile" element={<Profile />} /> */}
+
+            {/* Order */}
+            <Route path="/orders" element={<Orders />} />
+          </Route>
+          <Route element={<CheckoutLayout bgClass="bg-[rgba(255,253,243)]" />}>
+            {/* Checkout */}
+            <Route path="/checkout" element={<CheckoutIndex />} />
+            <Route path="/checkout/method" element={<CheckoutMethod />} />
+            <Route path="/checkout/payment" element={<CheckoutPayment />} />
+
+            {/* Order */}
+            <Route path="/orders/detail/:invoice" element={<OrderDetails />} />
           </Route>
         </Route>
 

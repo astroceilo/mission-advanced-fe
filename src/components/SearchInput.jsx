@@ -16,7 +16,7 @@ export default function SearchInput({
         type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="block w-full p-3.5 pe-10 text-sm text-gray-900 border border-other-border rounded-[10px] bg-white focus:ring-main-primary focus:border-main-primary"
+        className="block w-full p-3.5 pe-10 font-dm font-medium text-sm md:text-base! leading-[1.4] items-center text-text-dark-secondary border border-other-border rounded-[10px] bg-white focus:ring-main-primary focus:border-main-primary"
         placeholder={placeholder}
       />
     </div>

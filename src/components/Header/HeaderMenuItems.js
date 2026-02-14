@@ -38,20 +38,20 @@ export const roleMenu = {
 
 export const accountMenu = {
   student: [
-    { label: "Profile Saya", href: "/my-profile" },
-    { label: "Kelas Saya", href: "/my-class" },
-    { label: "Pesanan Saya", href: "/my-orders" },
+    { label: "Profile Saya", href: "/profile" },
+    { label: "Kelas Saya", href: "/class" },
+    { label: "Pesanan Saya", href: "/orders" },
     { label: "Keluar", action: "logout" },
   ],
 
   instructor: [
-    { label: "Profile Saya", href: "/my-profile" },
+    { label: "Profile Saya", href: "/profile" },
     { label: "Pengaturan", href: "/settings" },
     { label: "Keluar", action: "logout" },
   ],
 
   admin: [
-    { label: "Profile Saya", href: "/my-profile" },
+    { label: "Profile Saya", href: "/profile" },
     { label: "Pengaturan", href: "/settings" },
     { label: "Keluar", action: "logout" },
   ],

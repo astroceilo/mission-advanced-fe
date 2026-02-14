@@ -11,7 +11,6 @@ import CardCourse from "../../../components/CardCourse";
 import FilterSidebar from "./components/FilterSidebar";
 import { getFinalPrice } from "../../../utils/price";
 
-
 export default function Products() {
   const [courses, setCourses] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -195,19 +194,17 @@ export default function Products() {
 
           <main className="flex-1 min-w-0 flex flex-col gap-6 min-h-[700px]">
             {/* Header Filter + Search */}
-            <div className="w-full">
-              <div className="flex items-center justify-center md:justify-end! gap-4 w-full">
-                <SortDropdown
-                  sortOption={sortOption}
-                  setSortOption={setSortOption}
-                />
+            <div className="w-full flex items-center justify-center md:justify-end! gap-4 w-full">
+              <SortDropdown
+                sortOption={sortOption}
+                setSortOption={setSortOption}
+              />
 
-                <SearchInput
-                  value={search}
-                  onChange={setSearch}
-                  placeholder="Cari Kelas..."
-                />
-              </div>
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Cari Kelas..."
+              />
             </div>
 
             {/* Course Card */}

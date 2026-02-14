@@ -9,21 +9,26 @@ import {
   PlayCircle,
   Video,
 } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 
 import { normalizeProductForDetails } from "../../../utils/normalizeProduct/normalizeProductForDetails";
 import { truncateText } from "../../../utils/truncateText";
 import RatingStars from "../../../components/RatingStars";
+import { setProduct } from "../../../store/checkoutSlice";
 import { dummyApi, mockApi } from "../../../services/api";
 import CardCourse from "../../../components/CardCourse";
 import { getFinalPrice } from "../../../utils/price";
 
 export default function ProductDetails() {
   const { slug } = useParams();
-  const [product, setProduct] = useState(null);
+  const [product, setProductData] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,7 +46,7 @@ export default function ProductDetails() {
           productRaw,
           usersRes.data.users,
         );
-        setProduct(normalized);
+        setProductData(normalized);
 
         // cari related products
         const related = productsRes.data
@@ -75,6 +80,20 @@ export default function ProductDetails() {
   if (!product) return <p className="text-center py-10">Loading...</p>;
 
   const { hasDiscount, formatted } = getFinalPrice(product.price);
+
+  const handleBuyNow = () => {
+    dispatch(
+      setProduct({
+        id: product.id,
+        title: product.title,
+        slug: product.slug,
+        price: product.price,
+        thumbnail: product.thumbnail,
+        instructor: product.instructor,
+      }),
+    );
+    navigate("/checkout/method");
+  };
 
   return (
     <>
@@ -156,30 +175,29 @@ export default function ProductDetails() {
 
       <section className="mx-auto max-w-7xl mt-8 flex flex-col md:flex-row gap-6 md:gap-9">
         {/* Desc + Price */}
-        <div className="w-full md:w-[366px]! h-fit flex flex-col order-1 md:order-2 items-start gap-5 md:gap-6 rounded-[10px] bg-other-primarybg border border-other-border p-5 md:p-6">
+        <div className="w-full md:w-91.5! h-fit flex flex-col order-1 md:order-2 items-start gap-5 md:gap-6 rounded-[10px] bg-other-primarybg border border-other-border p-5 md:p-6">
           <div className="flex flex-col items-start gap-3 md:gap-4">
-            <h6 className="tracking-normal text-text-dark-primary">
-              Gapai Karier Impianmu sebagai Seorang UI/UX Designer & Product
-              Manager.
+            <h6 className="font-pop font-semibold text-base md:text-lg! leading-[1.2] tracking-normal text-text-dark-primary">
+              {product.title}
             </h6>
             <div className="w-full flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {hasDiscount ? (
                   <>
-                    <span className="text-base md:text-lg! font-semibold text-text-dark-primary">
+                    <h4 className="font-pop font-semibold text-sm sm:text-base! md:text-lg! text-main-primary leading-[1.2] tracking-normal">
                       {formatted.final}
-                    </span>
-                    <span className="text-sm md:text-base font-medium text-text-dark-disabled line-through">
+                    </h4>
+                    <span className="font-dm font-medium text-sm sm:text-base! md:text-lg! text-text-dark-disabled leading-[1.4] tracking-[0.2px] line-through">
                       {formatted.original}
                     </span>
                   </>
                 ) : (
-                  <span className="text-base md:text-lg! font-semibold text-text-dark-primary">
+                  <span className="font-pop font-semibold text-sm sm:text-base! md:text-lg! text-main-primary leading-[1.2] tracking-normal">
                     {formatted.final}
                   </span>
                 )}
               </div>
-              <span className="inline-block bg-main-secondary text-white font-normal rounded-[10px] text-xs px-1 py-2.5">
+              <span className="inline-block bg-main-secondary text-white font-normal rounded-full text-xs py-1 px-2.5">
                 Diskon 50%
               </span>
             </div>
@@ -188,12 +206,12 @@ export default function ProductDetails() {
             </span>
           </div>
           <div className="w-full flex flex-col items-start gap-3 md:gap-4">
-            <Link
-              to="#"
-              className="w-full inline-block bg-main-primary hover:bg-transparent text-white text-center hover:text-main-primary border border-main-primary md:font-bold rounded-[10px] text-sm md:text-base! px-[22px] py-[7px] md:px-[26px]! md:py-2.5! transition-colors duration-300"
+            <button
+              onClick={handleBuyNow}
+              className="w-full inline-block bg-main-primary hover:bg-transparent text-white text-center hover:text-main-primary border border-main-primary md:font-bold rounded-[10px] text-sm md:text-base! px-[22px] py-[7px] md:px-[26px]! md:py-2.5! transition-colors duration-300 cursor-pointer"
             >
               Beli Sekarang
-            </Link>
+            </button>
           </div>
           <div className="flex flex-col items-start gap-3 md:gap-4">
             <h4>Kelas Ini Sudah Termasuk</h4>
@@ -247,7 +265,7 @@ export default function ProductDetails() {
           </div>
         </div>
 
-        <div className="w-full flex flex-col order-2 md:order-1 gap-6 md:gap-9">
+        <div className="w-full md:w-[798px]! flex flex-col order-2 md:order-1 gap-6 md:gap-9">
           {/* Deskripsi */}
           <div className="w-full h-fit flex flex-col items-start gap-5 md:gap-6 rounded-[10px] bg-other-primarybg border border-other-border p-5 md:p-6">
             <div className="flex flex-col items-start gap-3 md:gap-4">

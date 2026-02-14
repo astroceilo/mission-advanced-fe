@@ -14,7 +14,7 @@ import { dummyApi, mockApi } from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
 import { formatPriceFull } from "../../../utils/price";
 
-export default function ListProducts() {
+export default function ProductLists() {
   const { user } = useAuth();
 
   const [products, setProducts] = useState([]);

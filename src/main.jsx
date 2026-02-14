@@ -1,17 +1,23 @@
-import './index.css';
-import 'flowbite';
+import "./index.css";
+import "flowbite";
 
-import { createRoot } from 'react-dom/client';
-import { StrictMode } from 'react';
+import { PersistGate } from "redux-persist/integration/react";
+import { createRoot } from "react-dom/client";
+import { Provider } from "react-redux";
+import { StrictMode } from "react";
 
 import { AuthProvider } from "./context/AuthContext";
-import App from './App.jsx';
+import { persistor, store } from "./store";
+import App from "./App.jsx";
 
-
-createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </PersistGate>
+    </Provider>
   </StrictMode>,
-)
+);
