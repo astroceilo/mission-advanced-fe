@@ -7,7 +7,6 @@ import { toast } from "react-toastify";
 import { validateLoginForm } from "../../utils/validations/validateLoginForm";
 import { useAuth } from "../../context/AuthContext";
 
-
 export default function Login() {
   const navigate = useNavigate();
   const { login, isLoggedIn } = useAuth();
@@ -200,6 +199,31 @@ export default function Login() {
             >
               Daftar
             </Link>
+          </div>
+
+          <div className="text-base bg-blue-50 border border-blue-200 p-3 rounded-lg">
+            <p>Login bisa dengan API dari</p>
+            <a
+              href="https://dummyjson.com/users"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline break-all"
+            >
+              https://dummyjson.com/users
+            </a>
+            <p className="mt-2">Mapping role:</p>
+
+            <ul className="list-disc ml-4 mt-1 space-y-1">
+              <li>
+                <strong>"admin"</strong> → <strong>admin</strong>
+              </li>
+              <li>
+                <strong>"instructor"</strong> → <strong>instructor</strong>
+              </li>
+              <li>
+                <strong>"user"</strong> → <strong>student</strong>
+              </li>
+            </ul>
           </div>
         </form>
 
