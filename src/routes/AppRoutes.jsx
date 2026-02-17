@@ -12,7 +12,6 @@ import AuthLayout from "../layouts/AuthLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import GuestRoute from "./GuestRoute";
 
-
 // Home/Public pages
 const Home = lazy(() => import("../pages/Browse/Home"));
 const BrowseProducts = lazy(() => import("../pages/Browse/Products"));

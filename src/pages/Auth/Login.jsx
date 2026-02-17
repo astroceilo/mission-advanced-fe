@@ -218,7 +218,7 @@ export default function Login() {
                 <strong>"admin"</strong> → <strong>admin</strong>
               </li>
               <li>
-                <strong>"instructor"</strong> → <strong>instructor</strong>
+                <strong>"moderator"</strong> → <strong>instructor</strong>
               </li>
               <li>
                 <strong>"user"</strong> → <strong>student</strong>
