@@ -1,25 +1,20 @@
-import {
-  Check,
-  FileCheck,
-  Book,
-  FilePen,
-  Video,
-  FileBadge,
-  Globe,
-  ChevronDown,
-} from "lucide-react";
+import { Check, FileCheck, Book, FilePen, Video, FileBadge, Globe, ChevronDown, } from "lucide-react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 
 import CheckoutSummary from "../../../components/Checkout/CheckoutSummary";
 import CheckoutStepper from "../../../components/Checkout/CheckoutStepper";
 import { formatPriceFull, getFinalPrice } from "../../../utils/price";
 import { setPaymentMethod } from "../../../store/checkoutSlice";
 import { paymentMethods } from "./config/paymentMethods";
+import { useAuth } from "../../../context/AuthContext";
+
 
 export default function CheckoutMethod() {
+  const { user } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -34,17 +29,27 @@ export default function CheckoutMethod() {
   );
   const selected = payment.method;
 
+  // 🚨 HARD GUARD
+  if (!product || isCheckoutCompleted) {
+    return <Navigate to="/products" replace />;
+  }
+  // 🚨 END HARD GUARD
+
+  const hasShownToast = useRef(false);
+
   useEffect(() => {
-    if (!product || isCheckoutCompleted) {
+    if (!product || !user) return;
+
+    if (product.instructorId === user.id && !hasShownToast.current) {
+      hasShownToast.current = true;
+      toast.error("Tidak bisa membeli produk sendiri");
       navigate("/products", { replace: true });
     }
-  }, [product, isCheckoutCompleted, navigate]);
+  }, [product, user, navigate]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
-
-  if (!product) return null;
 
   const priceCompact = getFinalPrice(product.price);
   const priceFull = getFinalPrice(product.price, formatPriceFull);
@@ -56,8 +61,6 @@ export default function CheckoutMethod() {
 
   const handleContinue = () => {
     if (!selected) return;
-
-    // dispatch(setPaymentMethod(selected));
     navigate("/checkout/payment", { replace: true });
   };
 
@@ -66,7 +69,7 @@ export default function CheckoutMethod() {
       {/* CheckoutStepper */}
       <CheckoutStepper />
 
-      <section className="max-w-7xl mt-0 md:mt-8 flex flex-col md:flex-row gap-6 md:gap-9">
+      <section className="w-full mt-0 md:mt-8 flex flex-col md:flex-row gap-6 md:gap-9">
         {/* Desc + Price */}
         <div className="w-full md:w-[366px]! h-fit flex flex-col order-1 md:order-2 items-start gap-5 md:gap-6 rounded-[10px] bg-other-primarybg border border-other-border p-5 md:p-6">
           <div className="flex flex-col items-start gap-3 md:gap-4">

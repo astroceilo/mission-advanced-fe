@@ -1,12 +1,4 @@
-import {
-  FileCheck,
-  Book,
-  FilePen,
-  Video,
-  FileBadge,
-  Globe,
-  ChevronDown,
-} from "lucide-react";
+import { FileCheck, Book, FilePen, Video, FileBadge, Globe, ChevronDown, } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +11,7 @@ import { formatPriceFull, getFinalPrice } from "../../../utils/price";
 import { createOrder } from "../../../store/orderSlice";
 import { useAuth } from "../../../context/AuthContext";
 import { paymentConfig } from "./config/paymentConfig";
+
 
 export default function CheckoutPayment() {
   const { user } = useAuth();
@@ -211,9 +204,9 @@ export default function CheckoutPayment() {
       </div>
 
       {/* CheckoutStepper */}
-      <CheckoutStepper classStyle="mt-16 md:mt-24!" />
+      <CheckoutStepper classStyle="mt-12" />
 
-      <section className="mx-auto max-w-7xl mt-0 md:mt-8! flex flex-col md:flex-row gap-6 md:gap-9">
+      <section className="mx-auto w-full mt-0 md:mt-8! flex flex-col md:flex-row gap-6 md:gap-9">
         {/* Desc + Price */}
         <div className="w-full md:w-[366px]! h-fit flex flex-col order-1 md:order-2 items-start gap-5 md:gap-6 rounded-[10px] bg-other-primarybg border border-other-border p-5 md:p-6">
           <div className="flex flex-col items-start gap-3 md:gap-4">
@@ -365,7 +358,7 @@ export default function CheckoutPayment() {
               adminFee={adminFee}
               totalPayment={totalPayment}
             >
-              <div className="group w-full flex flex-col md:flex-row items-center gap-5 md:gap-6!">
+              <div className="group w-full flex flex-col lg:flex-row items-center gap-5 md:gap-6!">
                 {/* Ganti Metode Pembayaran */}
                 <button
                   type="button"

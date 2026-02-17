@@ -1,14 +1,4 @@
-import {
-  Book,
-  ChevronDown,
-  Clock,
-  FileBadge,
-  FileCheck,
-  FilePen,
-  Globe,
-  PlayCircle,
-  Video,
-} from "lucide-react";
+import { Book, ChevronDown, Clock, FileBadge, FileCheck, FilePen, Globe, PlayCircle, Video, } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -20,15 +10,21 @@ import RatingStars from "../../../components/RatingStars";
 import { setProduct } from "../../../store/checkoutSlice";
 import { dummyApi, mockApi } from "../../../services/api";
 import CardCourse from "../../../components/CardCourse";
+import { useAuth } from "../../../context/AuthContext";
 import { getFinalPrice } from "../../../utils/price";
 
+
 export default function ProductDetails() {
+  const { user } = useAuth();
   const { slug } = useParams();
+
   const [product, setProductData] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const isOwner = product?.instructor?.id === user?.id;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -89,9 +85,10 @@ export default function ProductDetails() {
         slug: product.slug,
         price: product.price,
         thumbnail: product.thumbnail,
-        instructor: product.instructor,
+        instructorId: product.instructor.id,
       }),
     );
+
     navigate("/checkout/method");
   };
 
@@ -206,11 +203,24 @@ export default function ProductDetails() {
             </span>
           </div>
           <div className="w-full flex flex-col items-start gap-3 md:gap-4">
-            <button
+            {/* <button
               onClick={handleBuyNow}
               className="w-full inline-block bg-main-primary hover:bg-transparent text-white text-center hover:text-main-primary border border-main-primary md:font-bold rounded-[10px] text-sm md:text-base! px-[22px] py-[7px] md:px-[26px]! md:py-2.5! transition-colors duration-300 cursor-pointer"
             >
               Beli Sekarang
+            </button> */}
+
+            <button
+              onClick={handleBuyNow}
+              disabled={isOwner}
+              className={`w-full inline-block border md:font-bold rounded-[10px] text-sm md:text-base px-[22px] py-[7px] md:px-[26px] md:py-2.5 transition-colors duration-300 cursor-pointer
+                        ${
+                          isOwner
+                            ? "bg-gray-300 text-gray-500 border-gray-300 cursor-not-allowed"
+                            : "bg-main-primary hover:bg-transparent text-white hover:text-main-primary border-main-primary"
+                        }`}
+            >
+              {isOwner ? "Ini Produk Anda" : "Beli Sekarang"}
             </button>
           </div>
           <div className="flex flex-col items-start gap-3 md:gap-4">

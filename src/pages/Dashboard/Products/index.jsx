@@ -14,6 +14,7 @@ import { dummyApi, mockApi } from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
 import { formatPriceFull } from "../../../utils/price";
 
+
 export default function ProductLists() {
   const { user } = useAuth();
 
@@ -267,16 +268,16 @@ export default function ProductLists() {
                             : "#"
                         }
                       >
-                        {truncateText(product.title, 50)}
+                        {truncateText(product.title, 15)}
                       </Link>
                     </td>
                     <td className="px-6 py-4">
-                      {truncateText(product.slug, 35)}
+                      {truncateText(product.slug, 15)}
                     </td>
                     <td className="px-6 py-4">{product.category}</td>
                     <td className="px-6 py-4 max-w-xs">
                       <span className="cursor-help" title={product.description}>
-                        {truncateText(product.description, 60)}
+                        {truncateText(product.description, 50)}
                       </span>
                     </td>
                     <td className="px-6 py-4">

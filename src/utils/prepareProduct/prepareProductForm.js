@@ -13,8 +13,8 @@ export function prepareProductForm(product) {
     // price: product.price?.original?.toString() ?? "",
     // discount: product.price?.discount?.toString() ?? "",
 
-    instructorId: product.instructor?.id
-      ? product.instructor.id.toString()
+    instructorId: product.instructorId
+      ? product.instructorId.toString()
       : "",
 
     // ratingValue: product.rating?.stars?.toString() ?? "0",

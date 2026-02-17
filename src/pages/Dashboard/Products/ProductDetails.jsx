@@ -1,14 +1,4 @@
-import {
-  Book,
-  ChevronDown,
-  Clock,
-  FileBadge,
-  FileCheck,
-  FilePen,
-  Globe,
-  PlayCircle,
-  Video,
-} from "lucide-react";
+import { Book, ChevronDown, Clock, FileBadge, FileCheck, FilePen, Globe, PlayCircle, Video, } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -19,6 +9,7 @@ import RatingStars from "../../../components/RatingStars";
 import { dummyApi, mockApi } from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
 import { getFinalPrice } from "../../../utils/price";
+
 
 export default function ProductDetails() {
   const { user } = useAuth();
@@ -194,14 +185,6 @@ export default function ProductDetails() {
               Penawaran spesial tersisa 2 hari lagi!
             </span> */}
           </div>
-          {/* <div className="w-full flex flex-col items-start gap-3 md:gap-4">
-            <Link
-              to="#"
-              className="w-full inline-block bg-main-primary hover:bg-transparent text-white text-center hover:text-main-primary border border-main-primary md:font-bold rounded-[10px] text-sm md:text-base! px-[22px] py-[7px] md:px-[26px]! md:py-2.5! transition-colors duration-300"
-            >
-              Beli Sekarang
-            </Link>
-          </div> */}
           <div className="flex flex-col items-start gap-3 md:gap-4">
             <h4>Kelas Ini Sudah Termasuk</h4>
             <div className="flex gap-4">

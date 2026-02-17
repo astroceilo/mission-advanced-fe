@@ -13,6 +13,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { slugify } from "../../../utils/slugify";
 import { mockApi } from "../../../services/api";
 
+
 export default function CreateProducts() {
   // useNavigate and useAuth state
   const navigate = useNavigate();
@@ -178,7 +179,7 @@ export default function CreateProducts() {
 
       delete payload.thumbnail;
 
-      console.group("CREATE PRODUCT DEBUG");
+      console.group("CREATE PRODUCT DEBUG (REMOVE THUMBNAIL FOR MOCKAPI)");
       console.log("FORM RAW:", form);
       console.log("PAYLOAD NORMALIZED:", payload);
       console.groupEnd();
@@ -199,7 +200,7 @@ export default function CreateProducts() {
       }, 2000);
     } catch (err) {
       console.error("Product creation failed:", err);
-      toast.error("Gagal membuat produk 😭");
+      // toast.error("Gagal membuat produk 😭");
     } finally {
       setLoading(false);
     }

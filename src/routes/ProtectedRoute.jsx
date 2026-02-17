@@ -2,6 +2,7 @@ import { Navigate, Outlet } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 
+
 export default function ProtectedRoute({ allow }) {
   const { user, loading } = useAuth();
 
@@ -11,6 +12,12 @@ export default function ProtectedRoute({ allow }) {
     return <Navigate to="/login" replace />;
   }
 
+  // if (!allow) return <Outlet />;
+  if (!allow) {
+    return <Outlet />;
+  }
+
+  // if (!allow.includes(user.role)) return <Navigate to="/forbidden" replace />;
   if (!allow.includes(user.role)) {
     return <Navigate to="/forbidden" replace />;
   }

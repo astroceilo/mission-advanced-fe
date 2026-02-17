@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Check } from "lucide-react";
 
 import { useCheckoutStep } from "../../hooks/useCheckoutStep";
 import logo from "../../assets/images/logo.png";
+
 
 export default function CheckoutHeader() {
   const [scrolled, setScrolled] = useState(false);
@@ -31,35 +33,42 @@ export default function CheckoutHeader() {
         </Link>
 
         {/* Desktop stepper */}
-        <div className="hidden md:flex w-[486px] gap-4">
+        <div className="hidden md:flex w-[486px] justify-end">
           {steps.map((s, i) => {
             const isCompleted = i < active;
             const isActive = i === active;
 
             return (
-              <div key={s.label} className="flex items-center flex-1">
+              <div key={s.label} className="flex items-center flex-1 gap-3">
                 {/* Step */}
                 <div className="flex items-center gap-3">
                   <span
-                    className={`
-              w-6 h-6 flex items-center justify-center rounded-full border
-              ${
-                isCompleted
-                  ? "bg-green-500 border-green-500 text-white"
-                  : isActive
-                    ? "border-green-500 ring-4 ring-green-200 text-green-600"
-                    : "border-gray-300 text-gray-400"
-              }
-            `}
+                    className={`relative w-[30px] h-[30px] flex items-center justify-center rounded-full border-[3px] transition-all
+                      ${
+                        isCompleted
+                          ? "bg-main-primary border-main-primary"
+                          : isActive
+                            ? "border-main-primary"
+                            : "border-text-dark-disabled"
+                      }
+                    `}
                   >
-                    {isCompleted ? "✓" : i + 1}
+                    {isCompleted ? (
+                      <Check className="w-full h-full text-text-light-primary" />
+                    ) : (
+                      <span
+                        className={`w-4 h-4 rounded-full ${
+                          isActive ? "bg-main-primary" : "bg-text-dark-disabled"
+                        }`}
+                      />
+                    )}
                   </span>
 
                   <span
                     className={
                       isCompleted || isActive
                         ? "font-dm font-bold text-sm text-text-dark-primary"
-                        : "font-dm font-medium text-sm text-text-dark-secondary"
+                        : "font-dm font-bold text-sm text-text-dark-secondary"
                     }
                   >
                     {s.label}
@@ -69,8 +78,8 @@ export default function CheckoutHeader() {
                 {/* Connector */}
                 {i < steps.length - 1 && (
                   <div
-                    className={`flex-1 h-0.5 mx-3 ${
-                      i < active ? "bg-green-500" : "bg-gray-300"
+                    className={`flex-1 w-[73.5px] h-[3px] ${
+                      i < active ? "bg-main-primary" : "bg-text-dark-disabled"
                     }`}
                   />
                 )}
@@ -79,11 +88,6 @@ export default function CheckoutHeader() {
           })}
         </div>
       </div>
-
-      {/* Mobile step */}
-      {/* <div className="md:hidden px-5 py-2 border-t text-sm">
-        Step {active + 1} dari {steps.length} – {steps[active]?.label}
-      </div> */}
     </header>
   );
 }

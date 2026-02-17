@@ -14,6 +14,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { slugify } from "../../../utils/slugify";
 import { mockApi } from "../../../services/api";
 
+
 export default function UpdateProducts() {
   // useNavigate and useAuth state
   const navigate = useNavigate();
@@ -87,13 +88,13 @@ export default function UpdateProducts() {
     }
   }, [form.instructorId, user]);
 
-  useEffect(() => {
-    if (!id || !form.slug) return;
+  // useEffect(() => {
+  //   if (!id || !form.slug) return;
 
-    if (slug !== form.slug) {
-      navigate(`/update-products/${id}/${form.slug}`, { replace: true });
-    }
-  }, [slug, form.slug, id]);
+  //   if (slug !== form.slug) {
+  //     navigate(`/update-products/${id}/${form.slug}`, { replace: true });
+  //   }
+  // }, [slug, form.slug, id]);
 
   // other state
   const [isSlugManual, setIsSlugManual] = useState(false);
@@ -231,10 +232,10 @@ export default function UpdateProducts() {
         delete payload.thumbnail;
       }
 
-      console.group("UPDATE PRODUCT DEBUG");
-      console.log("FORM RAW:", form);
-      console.log("PAYLOAD NORMALIZED:", payload);
-      console.groupEnd();
+      // console.group("UPDATE PRODUCT DEBUG");
+      // console.log("FORM RAW:", form);
+      // console.log("PAYLOAD NORMALIZED:", payload);
+      // console.groupEnd();
 
       await mockApi.put(`/products/${id}`, payload);
 
@@ -248,7 +249,7 @@ export default function UpdateProducts() {
       }, 2000);
     } catch (err) {
       console.error("Update product failed:", err);
-      toast.error("Gagal perbarui produk 😭");
+      // toast.error("Gagal perbarui produk 😭");
     } finally {
       setLoading(false);
     }
