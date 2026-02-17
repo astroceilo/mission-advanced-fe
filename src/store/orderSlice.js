@@ -39,7 +39,9 @@ const orderSlice = createSlice({
       })
       .addCase(fetchOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.list = action.payload;
+        state.list = action.payload.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
       })
       .addCase(fetchOrders.rejected, (state, action) => {
         state.loading = false;
@@ -59,6 +61,7 @@ const orderSlice = createSlice({
       })
 
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
+        // console.log("FULFILLED PAYLOAD:", action.payload);
         const index = state.list.findIndex(
           (o) => o.id === action.payload.id
         );

@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { fetchOrders, updateOrderStatus } from "../../../store/orderSlice";
 import OrderResultCompleted from "./components/OrderResultCompleted";
 import OrderResultDeferred from "./components/OrderResultDeffered";
+import OrderResultFailed from "./components/OrderResultFailed";
 
 export default function OrderDetails() {
   const { invoice } = useParams();
@@ -29,14 +30,35 @@ export default function OrderDetails() {
   // simulate payment gateaway
   useEffect(() => {
     if (order?.status === "pending") {
+      const random = Math.random();
+
+      let delay;
+      let finalStatus;
+
+      if (random < 0.6) {
+        // fast delay
+        delay = Math.floor(Math.random() * 3000) + 1000; // 1–4 second
+        finalStatus = "paid";
+      } else if (random < 0.85) {
+        // medium delay
+        delay = Math.floor(Math.random() * 4000) + 4000; // 4-8 second
+        finalStatus = "paid";
+      } else {
+        // failed
+        delay = Math.floor(Math.random() * 4000) + 3000; // 3–7 second
+        finalStatus = "failed";
+      }
+
       const timer = setTimeout(() => {
+        // console.log("Dispatching update:", finalStatus);
+
         dispatch(
           updateOrderStatus({
             id: order.id,
-            status: "paid",
+            status: finalStatus,
           }),
         );
-      }, 5000);
+      }, delay);
 
       return () => clearTimeout(timer);
     }
@@ -51,6 +73,10 @@ export default function OrderDetails() {
 
   if (order.status === "pending") {
     return <OrderResultDeferred />;
+  }
+
+  if (order.status === "failed") {
+    return <OrderResultFailed />;
   }
 
   if (!loading && list.length === 0) {
