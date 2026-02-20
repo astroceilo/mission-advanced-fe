@@ -41,17 +41,22 @@ export const accountMenu = {
     { label: "Profile Saya", href: "/profile" },
     { label: "Kelas Saya", href: "/class" },
     { label: "Pesanan Saya", href: "/orders" },
+    { label: "Pengaturan", href: "/settings" },
     { label: "Keluar", action: "logout" },
   ],
 
   instructor: [
     { label: "Profile Saya", href: "/profile" },
+    { label: "Kelas Saya", href: "/class" },
+    { label: "Pesanan Saya", href: "/orders" },
     { label: "Pengaturan", href: "/settings" },
     { label: "Keluar", action: "logout" },
   ],
 
   admin: [
     { label: "Profile Saya", href: "/profile" },
+    { label: "Kelas Saya", href: "/class" },
+    { label: "Pesanan Saya", href: "/orders" },
     { label: "Pengaturan", href: "/settings" },
     { label: "Keluar", action: "logout" },
   ],
